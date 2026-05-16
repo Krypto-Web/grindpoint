@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — Grindpoint</title>
+  <!-- No AdSense on admin page -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .admin-tabs { display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1.5rem; border-bottom:1px solid var(--border); padding-bottom:1rem; }
+    .admin-tab { padding:0.5rem 1.25rem; border-radius:50px; border:1px solid var(--border); background:transparent; color:var(--muted); font-family:'DM Sans',sans-serif; font-size:0.88rem; cursor:pointer; transition:all 0.2s; }
+    .admin-tab.active { background:var(--accent); color:#0a0a0b; border-color:var(--accent); font-weight:600; }
+    .admin-panel { display:none; }
+    .admin-panel.active { display:block; }
+    .action-btn { padding:0.3rem 0.8rem; border-radius:6px; border:none; font-size:0.8rem; cursor:pointer; font-family:'DM Sans',sans-serif; }
+    .approve-btn { background:rgba(34,197,94,0.15); color:var(--success); border:1px solid rgba(34,197,94,0.3); }
+    .reject-btn { background:rgba(239,68,68,0.15); color:var(--danger); border:1px solid rgba(239,68,68,0.3); }
+    .paid-btn { background:rgba(245,166,35,0.15); color:var(--accent); border:1px solid rgba(245,166,35,0.3); }
+    .task-form { background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem; margin-bottom:1.5rem; }
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    @media(max-width:600px){.two-col{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+
+<!-- Admin login gate -->
+<div id="admin-login" class="auth-wrap">
+  <div class="auth-box fade-up">
+    <div class="auth-logo"><span class="logo">Grind<span>point</span></span> <span style="font-size:0.8rem;color:var(--muted);margin-left:0.5rem;">Admin</span></div>
+    <h2 class="auth-title">Admin Access</h2>
+    <p class="auth-sub">Enter your admin password to continue.</p>
+    <div class="alert alert-error" id="admin-login-error"></div>
+    <div class="form-group">
+      <label class="form-label">Admin Password</label>
+      <input type="password" id="admin-password" class="form-input" placeholder="Admin password"/>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="adminLogin()">Access Admin Panel</button>
+  </div>
+</div>
+
+<!-- Admin dashboard (hidden until logged in) -->
+<div id="admin-dashboard" style="display:none;">
+  <nav>
+    <span class="logo">Grind<span>point</span> <span style="font-size:0.75rem;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:400;">Admin</span></span>
+    <div style="display:flex;gap:1rem;align-items:center;">
+      <span id="admin-time" style="font-size:0.82rem;color:var(--muted);"></span>
+      <button class="btn btn-ghost btn-sm" onclick="adminLogout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="container" style="padding-top:2rem;padding-bottom:4rem;">
+
+    <!-- Stats -->
+    <div class="stats-row" id="admin-stats" style="margin-bottom:2rem;"></div>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchAdminTab('redemptions', this)">💸 Redemptions</button>
+      <button class="admin-tab" onclick="switchAdminTab('completions', this)">✅ Task Reviews</button>
+      <button class="admin-tab" onclick="switchAdminTab('tasks', this)">📋 Manage Tasks</button>
+      <button class="admin-tab" onclick="switchAdminTab('users', this)">👥 Users</button>
+    </div>
+
+    <!-- REDEMPTIONS -->
+    <div class="admin-panel active" id="panel-redemptions">
+      <div style="display:flex;gap:0.5rem;margin-bottom:1rem;">
+        <button class="action-btn approve-btn" onclick="loadRedemptions('pending')">Pending</button>
+        <button class="action-btn paid-btn" onclick="loadRedemptions('processing')">Processing</button>
+        <button class="action-btn" style="background:var(--card);color:var(--muted);border:1px solid var(--border);" onclick="loadRedemptions('paid')">Paid</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>User</th><th>Type</th><th>Amount</th><th>Details</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody id="redemptions-body"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem;">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TASK REVIEWS -->
+    <div class="admin-panel" id="panel-completions">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>User</th><th>Task</th><th>Points</th><th>Proof</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody id="completions-body"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem;">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MANAGE TASKS -->
+    <div class="admin-panel" id="panel-tasks">
+      <div class="task-form">
+        <h3 style="font-size:1rem;margin-bottom:1.25rem;">➕ Add New Task</h3>
+        <div class="two-col">
+          <div class="form-group"><label class="form-label">Title</label><input type="text" id="t-title" class="form-input" placeholder="Task title"/></div>
+          <div class="form-group">
+            <label class="form-label">Type</label>
+            <select id="t-type" class="form-input">
+              <option value="watch_ad">Watch Ad</option>
+              <option value="social">Social</option>
+              <option value="transcription">Transcription</option>
+              <option value="app_testing">App Testing</option>
+              <option value="data_labeling">Data Labeling</option>
+              <option value="trivia">Trivia</option>
+              <option value="mini_game">Mini-Game</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Description</label><input type="text" id="t-desc" class="form-input" placeholder="What the user needs to do"/></div>
+        <div class="two-col">
+          <div class="form-group"><label class="form-label">Points</label><input type="number" id="t-points" class="form-input" placeholder="e.g. 100"/></div>
+          <div class="form-group"><label class="form-label">URL (optional)</label><input type="text" id="t-url" class="form-input" placeholder="Link to open"/></div>
+        </div>
+        <div class="form-group" style="display:flex;align-items:center;gap:0.75rem;">
+          <input type="checkbox" id="t-review" style="width:16px;height:16px;"/>
+          <label class="form-label" style="margin:0;cursor:pointer;" for="t-review">Requires manual review before awarding points</label>
+        </div>
+        <div class="alert alert-error" id="task-form-error"></div>
+        <div class="alert alert-success" id="task-form-success"></div>
+        <button class="btn btn-primary" onclick="addTask()">Add Task</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Title</th><th>Type</th><th>Points</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="tasks-body"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem;">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="admin-panel" id="panel-users">
+      <div style="display:flex;gap:0.75rem;margin-bottom:1rem;">
+        <input type="text" id="user-search" class="form-input" placeholder="Search by email..." style="max-width:300px;"/>
+        <button class="btn btn-ghost btn-sm" onclick="loadUsers()">Search</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Points</th><th>Streak</th><th>Verified</th><th>Joined</th><th>Actions</th></tr></thead>
+          <tbody id="users-body"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem;">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+  import { supabase } from './js/supabase.js'
+  import { formatPoints, timeAgo, toast } from './js/app.js'
+
+  // ── Admin password check (client-side gate) ───────────────────
+  const ADMIN_PASSWORD = 'grindpoint_admin_2025' // ⚠️ Change this!
+  const ADMIN_KEY = 'gp_admin_auth'
+
+  function isAdminLoggedIn() { return sessionStorage.getItem(ADMIN_KEY) === 'true' }
+
+  if (isAdminLoggedIn()) showDashboard()
+
+  window.adminLogin = function () {
+    const pw = document.getElementById('admin-password').value
+    const err = document.getElementById('admin-login-error')
+    if (pw !== ADMIN_PASSWORD) {
+      err.textContent = 'Incorrect password.'
+      err.classList.add('show')
+      return
+    }
+    sessionStorage.setItem(ADMIN_KEY, 'true')
+    showDashboard()
+  }
+
+  document.getElementById('admin-password')?.addEventListener('keydown', e => { if (e.key === 'Enter') adminLogin() })
+
+  window.adminLogout = function () {
+    sessionStorage.removeItem(ADMIN_KEY)
+    window.location.reload()
+  }
+
+  function showDashboard() {
+    document.getElementById('admin-login').style.display = 'none'
+    document.getElementById('admin-dashboard').style.display = 'block'
+    document.getElementById('admin-time').textContent = new Date().toLocaleString('en-NG')
+    loadStats()
+    loadRedemptions('pending')
+  }
+
+  // ── Stats ─────────────────────────────────────────────────────
+  async function loadStats() {
+    const [{ count: users }, { count: pending }, { data: txs }] = await Promise.all([
+      supabase.from('users').select('*', { count: 'exact', head: true }),
+      supabase.from('redemptions').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+      supabase.from('transactions').select('points').eq('type', 'redeem')
+    ])
+    const paid = txs?.reduce((s, t) => s + Math.abs(t.points) * 0.2, 0) || 0
+    document.getElementById('admin-stats').innerHTML = `
+      <div class="stat-card"><div class="stat-num">${users}</div><div class="stat-lbl">Total users</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--warning);">${pending}</div><div class="stat-lbl">Pending redemptions</div></div>
+      <div class="stat-card"><div class="stat-num">₦${paid.toLocaleString()}</div><div class="stat-lbl">Total paid out</div></div>
+    `
+  }
+
+  // ── Redemptions ───────────────────────────────────────────────
+  window.loadRedemptions = async function (status = 'pending') {
+    const { data } = await supabase
+      .from('redemptions')
+      .select('*, users(name, email)')
+      .eq('status', status)
+      .order('created_at', { ascending: true })
+
+    const tbody = document.getElementById('redemptions-body')
+    if (!data?.length) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem;">No ${status} redemptions.</td></tr>`; return }
+
+    tbody.innerHTML = data.map(r => `
+      <tr>
+        <td><div style="font-weight:500;">${r.users?.name}</div><div style="font-size:0.78rem;color:var(--muted);">${r.users?.email}</div></td>
+        <td><span class="badge ${r.type === 'bank' ? 'badge-accent' : 'badge-muted'}">${r.type === 'bank' ? '🏦 Bank' : '📱 Airtime'}</span></td>
+        <td><strong style="color:var(--accent);">₦${r.naira_amount?.toLocaleString()}</strong><div style="font-size:0.78rem;color:var(--muted);">${formatPoints(r.points)} pts</div></td>
+        <td style="font-size:0.82rem;">${r.type === 'bank' ? `${r.bank_name}<br/>${r.account_number}<br/>${r.account_name}` : `${r.phone}<br/>${r.network}`}</td>
+        <td style="font-size:0.82rem;color:var(--muted);">${timeAgo(r.created_at)}</td>
+        <td>
+          ${status === 'pending' ? `
+            <button class="action-btn paid-btn" onclick="updateRedemption('${r.id}','processing')">Mark Processing</button>
+            <button class="action-btn reject-btn" style="margin-top:4px;" onclick="rejectRedemption('${r.id}','${r.user_id}',${r.points})">Reject</button>
+          ` : status === 'processing' ? `
+            <button class="action-btn approve-btn" onclick="updateRedemption('${r.id}','paid')">Mark Paid ✓</button>
+          ` : '—'}
+        </td>
+      </tr>
+    `).join('')
+  }
+
+  window.updateRedemption = async function (id, status) {
+    await supabase.from('redemptions').update({ status }).eq('id', id)
+    toast(`Redemption marked as ${status}`, 'success')
+    loadRedemptions(status === 'processing' ? 'pending' : 'processing')
+    loadStats()
+  }
+
+  window.rejectRedemption = async function (id, userId, points) {
+    if (!confirm('Reject this redemption and refund points?')) return
+    await supabase.from('redemptions').update({ status: 'rejected' }).eq('id', id)
+    await supabase.rpc('increment_points', { user_id: userId, amount: points })
+    await supabase.from('transactions').insert({ user_id: userId, type: 'earn', source: 'refund', points, description: 'Redemption refunded' })
+    toast('Rejected and points refunded', 'info')
+    loadRedemptions('pending')
+    loadStats()
+  }
+
+  // ── Task completions review ───────────────────────────────────
+  async function loadCompletions() {
+    const { data } = await supabase
+      .from('task_completions')
+      .select('*, users(name, email), tasks(title, points)')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: true })
+
+    const tbody = document.getElementById('completions-body')
+    if (!data?.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem;">No pending reviews.</td></tr>'; return }
+
+    tbody.innerHTML = data.map(c => `
+      <tr>
+        <td><div style="font-weight:500;">${c.users?.name}</div><div style="font-size:0.78rem;color:var(--muted);">${c.users?.email}</div></td>
+        <td style="font-size:0.88rem;">${c.tasks?.title}</td>
+        <td><strong style="color:var(--accent);">+${c.tasks?.points} pts</strong></td>
+        <td style="font-size:0.82rem;">${c.proof ? `<a href="${c.proof}" target="_blank" style="color:var(--accent);">View proof</a>` : '<span style="color:var(--muted);">None</span>'}</td>
+        <td style="font-size:0.82rem;color:var(--muted);">${timeAgo(c.created_at)}</td>
+        <td style="display:flex;gap:0.4rem;flex-wrap:wrap;padding:0.75rem 1rem;">
+          <button class="action-btn approve-btn" onclick="reviewCompletion('${c.id}','${c.user_id}',${c.tasks?.points},'approved')">Approve</button>
+          <button class="action-btn reject-btn" onclick="reviewCompletion('${c.id}','${c.user_id}',${c.tasks?.points},'rejected')">Reject</button>
+        </td>
+      </tr>
+    `).join('')
+  }
+
+  window.reviewCompletion = async function (id, userId, points, status) {
+    await supabase.from('task_completions').update({ status }).eq('id', id)
+    if (status === 'approved') {
+      await supabase.rpc('increment_points', { user_id: userId, amount: points })
+      await supabase.from('transactions').insert({ user_id: userId, type: 'earn', source: 'task', points, description: 'Task approved by admin' })
+    }
+    toast(`Task ${status}`, status === 'approved' ? 'success' : 'info')
+    loadCompletions()
+  }
+
+  // ── Tasks CRUD ────────────────────────────────────────────────
+  async function loadTasks() {
+    const { data } = await supabase.from('tasks').select('*').order('created_at', { ascending: false })
+    const tbody = document.getElementById('tasks-body')
+    if (!data?.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem;">No tasks yet.</td></tr>'; return }
+    tbody.innerHTML = data.map(t => `
+      <tr>
+        <td style="font-weight:500;">${t.title}</td>
+        <td><span class="badge badge-muted">${t.type}</span></td>
+        <td style="color:var(--accent);font-weight:600;">+${t.points}</td>
+        <td><span class="badge ${t.is_active ? 'badge-success' : 'badge-danger'}">${t.is_active ? 'Active' : 'Inactive'}</span></td>
+        <td style="display:flex;gap:0.4rem;padding:0.75rem 1rem;">
+          <button class="action-btn" style="background:var(--card);color:var(--muted);border:1px solid var(--border);" onclick="toggleTask('${t.id}',${t.is_active})">${t.is_active ? 'Deactivate' : 'Activate'}</button>
+          <button class="action-btn reject-btn" onclick="deleteTask('${t.id}')">Delete</button>
+        </td>
+      </tr>
+    `).join('')
+  }
+
+  window.addTask = async function () {
+    const errEl = document.getElementById('task-form-error')
+    const sucEl = document.getElementById('task-form-success')
+    errEl.classList.remove('show'); sucEl.classList.remove('show')
+
+    const title = document.getElementById('t-title').value.trim()
+    const type = document.getElementById('t-type').value
+    const description = document.getElementById('t-desc').value.trim()
+    const points = parseInt(document.getElementById('t-points').value)
+    const url = document.getElementById('t-url').value.trim()
+    const requires_review = document.getElementById('t-review').checked
+
+    if (!title || !points) { errEl.textContent = 'Title and points are required.'; errEl.classList.add('show'); return }
+
+    const { error } = await supabase.from('tasks').insert({ title, type, description, points, url: url || null, requires_review, is_active: true })
+    if (error) { errEl.textContent = error.message; errEl.classList.add('show'); return }
+
+    sucEl.textContent = '✅ Task added successfully!'
+    sucEl.classList.add('show')
+    document.getElementById('t-title').value = ''
+    document.getElementById('t-desc').value = ''
+    document.getElementById('t-points').value = ''
+    document.getElementById('t-url').value = ''
+    document.getElementById('t-review').checked = false
+    loadTasks()
+  }
+
+  window.toggleTask = async function (id, isActive) {
+    await supabase.from('tasks').update({ is_active: !isActive }).eq('id', id)
+    toast(`Task ${isActive ? 'deactivated' : 'activated'}`, 'info')
+    loadTasks()
+  }
+
+  window.deleteTask = async function (id) {
+    if (!confirm('Delete this task? This cannot be undone.')) return
+    await supabase.from('tasks').delete().eq('id', id)
+    toast('Task deleted', 'info')
+    loadTasks()
+  }
+
+  // ── Users ─────────────────────────────────────────────────────
+  window.loadUsers = async function () {
+    const search = document.getElementById('user-search').value.trim()
+    let query = supabase.from('users').select('id, name, email, points, streak_days, is_verified, created_at').order('created_at', { ascending: false }).limit(50)
+    if (search) query = query.ilike('email', `%${search}%`)
+    const { data } = await query
+    const tbody = document.getElementById('users-body')
+    if (!data?.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem;">No users found.</td></tr>'; return }
+    tbody.innerHTML = data.map(u => `
+      <tr>
+        <td style="font-weight:500;">${u.name}</td>
+        <td style="font-size:0.85rem;">${u.email}</td>
+        <td style="color:var(--accent);font-weight:600;">${formatPoints(u.points)}</td>
+        <td>Day ${u.streak_days || 0}</td>
+        <td><span class="badge ${u.is_verified ? 'badge-success' : 'badge-danger'}">${u.is_verified ? 'Yes' : 'No'}</span></td>
+        <td style="font-size:0.82rem;color:var(--muted);">${timeAgo(u.created_at)}</td>
+        <td>
+          <button class="action-btn approve-btn" onclick="adjustPoints('${u.id}','${u.name}')">Adjust pts</button>
+        </td>
+      </tr>
+    `).join('')
+  }
+
+  window.adjustPoints = async function (userId, name) {
+    const amount = prompt(`Adjust points for ${name}.\nEnter a positive number to add, negative to deduct:`)
+    if (!amount || isNaN(amount)) return
+    const n = parseInt(amount)
+    if (n > 0) await supabase.rpc('increment_points', { user_id: userId, amount: n })
+    else await supabase.rpc('decrement_points', { user_id: userId, amount: Math.abs(n) })
+    await supabase.from('transactions').insert({ user_id: userId, type: n > 0 ? 'earn' : 'redeem', source: 'admin', points: n, description: 'Manual admin adjustment' })
+    toast(`Points adjusted for ${name}`, 'success')
+    loadUsers()
+  }
+
+  // ── Tab switching ─────────────────────────────────────────────
+  window.switchAdminTab = function (tab, btn) {
+    document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'))
+    document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'))
+    btn.classList.add('active')
+    document.getElementById(`panel-${tab}`).classList.add('active')
+
+    if (tab === 'completions') loadCompletions()
+    else if (tab === 'tasks') loadTasks()
+    else if (tab === 'users') loadUsers()
+    else if (tab === 'redemptions') loadRedemptions('pending')
+  }
+</script>
+<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</body>
+</html>
