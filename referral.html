@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Referrals — Grindpoint</title>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .ref-code-box { background:linear-gradient(135deg,rgba(245,166,35,0.12),rgba(255,107,53,0.08)); border:1px solid rgba(245,166,35,0.3); border-radius:var(--radius); padding:2rem; text-align:center; margin-bottom:1.5rem; }
+    .ref-code { font-family:'Syne',sans-serif; font-size:2.2rem; font-weight:800; color:var(--accent); letter-spacing:4px; margin:0.75rem 0; }
+    .ref-link-box { display:flex; gap:0.5rem; margin-top:1rem; }
+    .ref-link-box input { flex:1; font-size:0.82rem; }
+    .share-btns { display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap; margin-top:1.25rem; }
+    .share-btn { padding:0.5rem 1.25rem; border-radius:50px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:0.85rem; cursor:pointer; transition:all 0.2s; display:flex;align-items:center;gap:0.4rem; }
+    .share-btn:hover { border-color:rgba(245,166,35,0.4); background:rgba(245,166,35,0.06); }
+    .ref-item { display:flex;align-items:center;gap:1rem;padding:0.85rem 0;border-bottom:1px solid var(--border); }
+    .ref-item:last-child { border-bottom:none; }
+    .ref-avatar { width:36px;height:36px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0; }
+  </style>
+</head>
+<body>
+
+<div id="page-loader" class="page-loader">
+  <div class="spinner" style="width:36px;height:36px;border-width:3px;"></div>
+</div>
+
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><a href="index.html" class="logo">Grind<span>point</span></a></div>
+    <ul class="sidebar-nav">
+      <li><a href="dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a></li>
+      <li><a href="tasks.html"><span class="nav-icon">✅</span> Tasks</a></li>
+      <li><a href="leaderboard.html"><span class="nav-icon">🏆</span> Leaderboard</a></li>
+      <li><a href="referral.html" class="active"><span class="nav-icon">👥</span> Referrals</a></li>
+      <li><a href="#" id="logout-btn" style="margin-top:2rem;"><span class="nav-icon">🚪</span> Logout</a></li>
+    </ul>
+  </aside>
+
+  <main class="dash-main">
+    <div class="dash-header-bar">
+      <div>
+        <h1>Referrals 👥</h1>
+        <p style="font-size:0.9rem;margin-top:0.2rem;">Earn 500 points for every friend you invite</p>
+      </div>
+      <button id="sidebar-toggle" class="nav-mobile-toggle">☰</button>
+    </div>
+
+    <ins class="adsbygoogle" style="display:block;margin-bottom:1.5rem;" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="1357924680" data-ad-format="auto" data-full-width-responsive="true"></ins>
+
+    <!-- Stats -->
+    <div class="stats-row" style="margin-bottom:1.5rem;">
+      <div class="stat-card"><div class="stat-num" id="ref-count">—</div><div class="stat-lbl">Friends referred</div></div>
+      <div class="stat-card"><div class="stat-num" id="ref-pts">—</div><div class="stat-lbl">Points earned from referrals</div></div>
+    </div>
+
+    <!-- Referral code box -->
+    <div class="ref-code-box">
+      <div style="font-size:0.85rem;color:var(--muted);">Your referral code</div>
+      <div class="ref-code" id="ref-code">——</div>
+      <div style="font-size:0.85rem;color:var(--muted);">Share your link and earn 500 points per signup</div>
+
+      <div class="ref-link-box">
+        <input type="text" class="form-input" id="ref-link" readonly/>
+        <button class="btn btn-primary btn-sm" onclick="copyLink()">Copy</button>
+      </div>
+
+      <div class="share-btns">
+        <button class="share-btn" onclick="shareWhatsApp()">📱 WhatsApp</button>
+        <button class="share-btn" onclick="shareTwitter()">🐦 Twitter/X</button>
+        <button class="share-btn" onclick="shareTelegram()">✈️ Telegram</button>
+      </div>
+    </div>
+
+    <!-- How it works -->
+    <div class="card" style="margin-bottom:1.5rem;">
+      <h3 style="font-size:1rem;margin-bottom:1rem;">How referrals work</h3>
+      <div style="display:flex;flex-direction:column;gap:0.75rem;">
+        <div style="display:flex;gap:1rem;align-items:flex-start;">
+          <div style="background:rgba(245,166,35,0.12);color:var(--accent);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;flex-shrink:0;">1</div>
+          <div><div style="font-weight:500;font-size:0.9rem;">Share your referral link</div><div style="font-size:0.82rem;color:var(--muted);">Send it to friends, post on social media, share in groups</div></div>
+        </div>
+        <div style="display:flex;gap:1rem;align-items:flex-start;">
+          <div style="background:rgba(245,166,35,0.12);color:var(--accent);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;flex-shrink:0;">2</div>
+          <div><div style="font-weight:500;font-size:0.9rem;">Friend signs up using your link</div><div style="font-size:0.82rem;color:var(--muted);">They create a free account through your referral link</div></div>
+        </div>
+        <div style="display:flex;gap:1rem;align-items:flex-start;">
+          <div style="background:rgba(245,166,35,0.12);color:var(--accent);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;flex-shrink:0;">3</div>
+          <div><div style="font-weight:500;font-size:0.9rem;">You earn 500 points instantly</div><div style="font-size:0.82rem;color:var(--muted);">Points are added to your balance the moment they register</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Referred users list -->
+    <div class="card">
+      <h3 style="font-size:1rem;margin-bottom:1rem;">People you referred</h3>
+      <div id="ref-list"><div style="color:var(--muted);font-size:0.9rem;">Loading...</div></div>
+    </div>
+  </main>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+  import { supabase } from './js/supabase.js'
+  import { requireAuth, formatPoints, timeAgo, initSidebar, hideLoader, toast } from './js/app.js'
+
+  initSidebar()
+  let referralCode = ''
+  let appUrl = window.location.origin
+
+  async function init() {
+    const session = await requireAuth()
+    if (!session) return
+
+    const { data: profile } = await supabase
+      .from('users')
+      .select('referral_code')
+      .eq('id', session.user.id)
+      .single()
+
+    referralCode = profile.referral_code
+    const refLink = `${appUrl}/register.html?ref=${referralCode}`
+
+    document.getElementById('ref-code').textContent = referralCode
+    document.getElementById('ref-link').value = refLink
+
+    // Referral stats
+    const { data: refs } = await supabase
+      .from('referrals')
+      .select('*, users!referred_id(name, created_at)')
+      .eq('referrer_id', session.user.id)
+      .order('created_at', { ascending: false })
+
+    document.getElementById('ref-count').textContent = refs?.length || 0
+    document.getElementById('ref-pts').textContent = formatPoints((refs?.length || 0) * 500)
+
+    // List
+    const list = document.getElementById('ref-list')
+    if (!refs?.length) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:0.9rem;padding:0.5rem 0;">No referrals yet. Share your link to start earning!</div>'
+    } else {
+      list.innerHTML = refs.map(r => `
+        <div class="ref-item">
+          <div class="ref-avatar">👤</div>
+          <div style="flex:1;">
+            <div style="font-weight:500;font-size:0.9rem;">${r.users?.name || 'User'}</div>
+            <div style="font-size:0.78rem;color:var(--muted);">Joined ${timeAgo(r.created_at)}</div>
+          </div>
+          <span class="badge badge-success">+500 pts</span>
+        </div>
+      `).join('')
+    }
+
+    hideLoader()
+  }
+
+  window.copyLink = function () {
+    navigator.clipboard.writeText(document.getElementById('ref-link').value)
+    toast('Referral link copied!', 'success')
+  }
+
+  window.shareWhatsApp = function () {
+    const link = document.getElementById('ref-link').value
+    window.open(`https://wa.me/?text=${encodeURIComponent(`Join me on Grindpoint and earn real Naira! Use my referral link: ${link}`)}`, '_blank')
+  }
+
+  window.shareTwitter = function () {
+    const link = document.getElementById('ref-link').value
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I've been earning Naira on Grindpoint 🔥 Join with my link and get started: ${link}`)}`, '_blank')
+  }
+
+  window.shareTelegram = function () {
+    const link = document.getElementById('ref-link').value
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('Join Grindpoint and earn Naira! 🇳🇬🔥')}`, '_blank')
+  }
+
+  document.getElementById('logout-btn').addEventListener('click', async e => {
+    e.preventDefault()
+    await supabase.auth.signOut()
+    window.location.href = 'index.html'
+  })
+
+  init()
+</script>
+<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</body>
+</html>
