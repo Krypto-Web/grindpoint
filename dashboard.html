@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — Grindpoint</title>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .balance-card { background:linear-gradient(135deg,rgba(245,166,35,0.15),rgba(255,107,53,0.1)); border:1px solid rgba(245,166,35,0.3); border-radius:var(--radius); padding:2rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; }
+    .tx-item { display:flex; align-items:center; gap:1rem; padding:0.85rem 0; border-bottom:1px solid var(--border); }
+    .tx-item:last-child { border-bottom:none; }
+    .tx-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .tx-dot.earn { background:var(--success); }
+    .tx-dot.redeem { background:var(--danger); }
+    .tx-info { flex:1; }
+    .tx-name { font-size:0.9rem; font-weight:500; color:var(--text); }
+    .tx-time { font-size:0.78rem; color:var(--muted); }
+    .tx-pts { font-family:'Syne',sans-serif; font-weight:700; font-size:0.95rem; }
+    .tx-pts.earn { color:var(--success); }
+    .tx-pts.redeem { color:var(--danger); }
+    .redeem-form { background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem; margin-top:1.5rem; }
+    .tab-row { display:flex; gap:0.5rem; margin-bottom:1.5rem; }
+    .tab-btn { padding:0.5rem 1.25rem; border-radius:50px; border:1px solid var(--border); background:transparent; color:var(--muted); font-family:'DM Sans',sans-serif; font-size:0.88rem; cursor:pointer; transition:all 0.2s; }
+    .tab-btn.active { background:var(--accent); color:#0a0a0b; border-color:var(--accent); font-weight:600; }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+  </style>
+</head>
+<body>
+
+<div id="page-loader" class="page-loader">
+  <div class="spinner" style="width:36px;height:36px;border-width:3px;"></div>
+</div>
+
+<div class="dash-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <a href="index.html" class="logo">Grind<span>point</span></a>
+    </div>
+    <ul class="sidebar-nav">
+      <li><a href="dashboard.html" class="active" id="nav-dashboard"><span class="nav-icon">🏠</span> Dashboard</a></li>
+      <li><a href="tasks.html" id="nav-tasks"><span class="nav-icon">✅</span> Tasks</a></li>
+      <li><a href="leaderboard.html" id="nav-lb"><span class="nav-icon">🏆</span> Leaderboard</a></li>
+      <li><a href="referral.html" id="nav-ref"><span class="nav-icon">👥</span> Referrals</a></li>
+      <li><a href="#" id="logout-btn" style="margin-top:2rem;"><span class="nav-icon">🚪</span> Logout</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main content -->
+  <main class="dash-main">
+    <div class="dash-header-bar">
+      <div>
+        <h1>Dashboard</h1>
+        <p id="welcome-msg" style="font-size:0.9rem;margin-top:0.2rem;">Loading...</p>
+      </div>
+      <button id="sidebar-toggle" class="nav-mobile-toggle">☰</button>
+    </div>
+
+    <!-- AdSense -->
+    <div style="margin-bottom:1.5rem;">
+      <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="1122334455" data-ad-format="auto" data-full-width-responsive="true"></ins>
+    </div>
+
+    <!-- Balance card -->
+    <div class="balance-card">
+      <div>
+        <div style="font-size:0.82rem;color:var(--muted);margin-bottom:0.3rem;">Total Points Balance</div>
+        <div class="points-big" id="points-display">—</div>
+        <div class="points-label" id="naira-display">≈ ₦0.00</div>
+        <div style="margin-top:0.75rem;display:flex;gap:0.5rem;align-items:center;">
+          <span style="font-size:0.82rem;color:var(--muted);">🔥 Streak:</span>
+          <span id="streak-display" style="font-family:'Syne',sans-serif;font-weight:700;color:var(--accent);font-size:0.9rem;">—</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.75rem;">
+        <a href="tasks.html" class="btn btn-primary">Earn More</a>
+        <button class="btn btn-ghost" onclick="openRedeem()">Redeem Points</button>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num" id="stat-earned">—</div><div class="stat-lbl">Total pts earned</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-redeemed">—</div><div class="stat-lbl">Total pts redeemed</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-tasks">—</div><div class="stat-lbl">Tasks completed</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-refs">—</div><div class="stat-lbl">Referrals</div></div>
+    </div>
+
+    <!-- Recent transactions -->
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <h3 style="font-size:1rem;">Recent Activity</h3>
+        <span style="font-size:0.82rem;color:var(--muted);">Last 10 transactions</span>
+      </div>
+      <div id="tx-list"><div style="color:var(--muted);font-size:0.9rem;">Loading...</div></div>
+    </div>
+
+    <!-- Redeem section -->
+    <div class="card" id="redeem-section" style="display:none;">
+      <h3 style="margin-bottom:1.25rem;">Redeem Points</h3>
+      <div style="background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.2);border-radius:var(--radius-sm);padding:0.85rem 1rem;margin-bottom:1.5rem;font-size:0.88rem;color:var(--accent);">
+        💡 Minimum redemption: 1,000 points (= ₦200). Current balance: <strong id="redeem-balance-display">—</strong> pts
+      </div>
+
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="switchTab('bank')">🏦 Bank Transfer</button>
+        <button class="tab-btn" onclick="switchTab('airtime')">📱 Airtime</button>
+      </div>
+
+      <!-- Bank tab -->
+      <div class="tab-panel active" id="tab-bank">
+        <div class="form-group">
+          <label class="form-label">Points to redeem</label>
+          <input type="number" id="bank-points" class="form-input" placeholder="Min 1000 points" min="1000" step="500"/>
+          <div id="bank-naira-preview" style="font-size:0.82rem;color:var(--accent);margin-top:0.4rem;"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bank Name</label>
+          <input type="text" id="bank-name" class="form-input" placeholder="e.g. GTBank, Access Bank, Zenith"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Account Number</label>
+          <input type="text" id="bank-account-num" class="form-input" placeholder="10-digit account number" maxlength="10"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Account Name</label>
+          <input type="text" id="bank-account-name" class="form-input" placeholder="Name on the account"/>
+        </div>
+        <div class="alert alert-error" id="bank-error"></div>
+        <div class="alert alert-success" id="bank-success"></div>
+        <button class="btn btn-primary btn-block" onclick="redeemBank()">Submit Withdrawal Request</button>
+      </div>
+
+      <!-- Airtime tab -->
+      <div class="tab-panel" id="tab-airtime">
+        <div class="form-group">
+          <label class="form-label">Points to redeem</label>
+          <input type="number" id="air-points" class="form-input" placeholder="Min 1000 points" min="1000" step="500"/>
+          <div id="air-naira-preview" style="font-size:0.82rem;color:var(--accent);margin-top:0.4rem;"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="tel" id="air-phone" class="form-input" placeholder="e.g. 08012345678"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Network</label>
+          <select id="air-network" class="form-input">
+            <option value="">Select network</option>
+            <option value="MTN">MTN</option>
+            <option value="Airtel">Airtel</option>
+            <option value="Glo">Glo</option>
+            <option value="9mobile">9mobile</option>
+          </select>
+        </div>
+        <div class="alert alert-error" id="air-error"></div>
+        <div class="alert alert-success" id="air-success"></div>
+        <button class="btn btn-primary btn-block" onclick="redeemAirtime()">Submit Airtime Request</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+  import { supabase } from './js/supabase.js'
+  import { requireAuth, formatPoints, pointsToNaira, timeAgo, initSidebar, hideLoader, toast } from './js/app.js'
+
+  initSidebar()
+  let currentUser = null
+  let userProfile = null
+
+  async function init() {
+    const session = await requireAuth()
+    if (!session) return
+
+    currentUser = session.user
+
+    const { data: profile } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', currentUser.id)
+      .single()
+
+    userProfile = profile
+
+    // Welcome message
+    const hour = new Date().getHours()
+    const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+    document.getElementById('welcome-msg').textContent = `${greeting}, ${profile.name} 👋`
+
+    // Balance
+    document.getElementById('points-display').textContent = formatPoints(profile.points)
+    document.getElementById('naira-display').textContent = `≈ ${pointsToNaira(profile.points)}`
+    document.getElementById('streak-display').textContent = `Day ${profile.streak_days || 0}`
+    document.getElementById('redeem-balance-display').textContent = formatPoints(profile.points)
+
+    // Stats
+    const { data: txs } = await supabase.from('transactions').select('type, points').eq('user_id', currentUser.id)
+    const earned = txs?.filter(t => t.type === 'earn').reduce((s, t) => s + t.points, 0) || 0
+    const redeemed = txs?.filter(t => t.type === 'redeem').reduce((s, t) => s + Math.abs(t.points), 0) || 0
+    document.getElementById('stat-earned').textContent = formatPoints(earned)
+    document.getElementById('stat-redeemed').textContent = formatPoints(redeemed)
+
+    const { count: taskCount } = await supabase.from('task_completions').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id).eq('status', 'approved')
+    document.getElementById('stat-tasks').textContent = taskCount || 0
+
+    const { count: refCount } = await supabase.from('referrals').select('*', { count: 'exact', head: true }).eq('referrer_id', currentUser.id)
+    document.getElementById('stat-refs').textContent = refCount || 0
+
+    // Recent transactions
+    const { data: recent } = await supabase.from('transactions').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(10)
+    const txList = document.getElementById('tx-list')
+    if (!recent?.length) {
+      txList.innerHTML = '<div style="color:var(--muted);font-size:0.9rem;padding:1rem 0;">No transactions yet. Start completing tasks!</div>'
+    } else {
+      txList.innerHTML = recent.map(tx => `
+        <div class="tx-item">
+          <div class="tx-dot ${tx.type}"></div>
+          <div class="tx-info">
+            <div class="tx-name">${tx.description}</div>
+            <div class="tx-time">${timeAgo(tx.created_at)}</div>
+          </div>
+          <div class="tx-pts ${tx.type}">${tx.type === 'earn' ? '+' : ''}${tx.points} pts</div>
+        </div>
+      `).join('')
+    }
+
+    hideLoader()
+  }
+
+  window.openRedeem = function () {
+    const section = document.getElementById('redeem-section')
+    section.style.display = section.style.display === 'none' ? 'block' : 'none'
+    if (section.style.display === 'block') section.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  window.switchTab = function (tab) {
+    document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', (i === 0 && tab === 'bank') || (i === 1 && tab === 'airtime')))
+    document.getElementById('tab-bank').classList.toggle('active', tab === 'bank')
+    document.getElementById('tab-airtime').classList.toggle('active', tab === 'airtime')
+  }
+
+  // Live naira preview
+  document.getElementById('bank-points')?.addEventListener('input', e => {
+    const pts = parseInt(e.target.value) || 0
+    document.getElementById('bank-naira-preview').textContent = pts >= 1000 ? `= ${pointsToNaira(pts)}` : ''
+  })
+  document.getElementById('air-points')?.addEventListener('input', e => {
+    const pts = parseInt(e.target.value) || 0
+    document.getElementById('air-naira-preview').textContent = pts >= 1000 ? `= ${pointsToNaira(pts)}` : ''
+  })
+
+  window.redeemBank = async function () {
+    const errorEl = document.getElementById('bank-error')
+    const successEl = document.getElementById('bank-success')
+    errorEl.classList.remove('show'); successEl.classList.remove('show')
+
+    const points = parseInt(document.getElementById('bank-points').value)
+    const bank_name = document.getElementById('bank-name').value.trim()
+    const account_number = document.getElementById('bank-account-num').value.trim()
+    const account_name = document.getElementById('bank-account-name').value.trim()
+
+    if (!points || points < 1000) { errorEl.textContent = 'Minimum 1,000 points to redeem.'; errorEl.classList.add('show'); return }
+    if (points > userProfile.points) { errorEl.textContent = 'Not enough points.'; errorEl.classList.add('show'); return }
+    if (!bank_name || !account_number || !account_name) { errorEl.textContent = 'Please fill all bank details.'; errorEl.classList.add('show'); return }
+    if (account_number.length !== 10) { errorEl.textContent = 'Account number must be 10 digits.'; errorEl.classList.add('show'); return }
+
+    const naira_amount = points * 0.2
+
+    await supabase.rpc('decrement_points', { user_id: currentUser.id, amount: points })
+    await supabase.from('transactions').insert({ user_id: currentUser.id, type: 'redeem', source: 'bank_transfer', points: -points, description: `Bank withdrawal ₦${naira_amount}` })
+    await supabase.from('redemptions').insert({ user_id: currentUser.id, type: 'bank', points, naira_amount, account_number, bank_name, account_name, status: 'pending' })
+
+    userProfile.points -= points
+    document.getElementById('points-display').textContent = formatPoints(userProfile.points)
+    document.getElementById('naira-display').textContent = `≈ ${pointsToNaira(userProfile.points)}`
+    document.getElementById('redeem-balance-display').textContent = formatPoints(userProfile.points)
+
+    successEl.textContent = `✅ Withdrawal of ₦${naira_amount.toLocaleString()} submitted! Admin will process within 24 hours.`
+    successEl.classList.add('show')
+    toast('Withdrawal request submitted!', 'success')
+  }
+
+  window.redeemAirtime = async function () {
+    const errorEl = document.getElementById('air-error')
+    const successEl = document.getElementById('air-success')
+    errorEl.classList.remove('show'); successEl.classList.remove('show')
+
+    const points = parseInt(document.getElementById('air-points').value)
+    const phone = document.getElementById('air-phone').value.trim()
+    const network = document.getElementById('air-network').value
+
+    if (!points || points < 1000) { errorEl.textContent = 'Minimum 1,000 points to redeem.'; errorEl.classList.add('show'); return }
+    if (points > userProfile.points) { errorEl.textContent = 'Not enough points.'; errorEl.classList.add('show'); return }
+    if (!phone || !network) { errorEl.textContent = 'Please enter phone number and select network.'; errorEl.classList.add('show'); return }
+
+    const naira_amount = points * 0.2
+
+    await supabase.rpc('decrement_points', { user_id: currentUser.id, amount: points })
+    await supabase.from('transactions').insert({ user_id: currentUser.id, type: 'redeem', source: 'airtime', points: -points, description: `Airtime ₦${naira_amount} to ${phone}` })
+    await supabase.from('redemptions').insert({ user_id: currentUser.id, type: 'airtime', points, naira_amount, phone, network, status: 'pending' })
+
+    userProfile.points -= points
+    document.getElementById('points-display').textContent = formatPoints(userProfile.points)
+    document.getElementById('naira-display').textContent = `≈ ${pointsToNaira(userProfile.points)}`
+
+    successEl.textContent = `✅ ₦${naira_amount.toLocaleString()} airtime request submitted! Processing within 1 hour.`
+    successEl.classList.add('show')
+    toast('Airtime request submitted!', 'success')
+  }
+
+  // Logout
+  document.getElementById('logout-btn').addEventListener('click', async (e) => {
+    e.preventDefault()
+    await supabase.auth.signOut()
+    window.location.href = 'index.html'
+  })
+
+  init()
+</script>
+<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</body>
+</html>
