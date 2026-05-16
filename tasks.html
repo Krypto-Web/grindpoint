@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tasks — Grindpoint</title>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .filter-row { display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1.5rem; }
+    .filter-btn { padding:0.4rem 1rem; border-radius:50px; border:1px solid var(--border); background:transparent; color:var(--muted); font-family:'DM Sans',sans-serif; font-size:0.85rem; cursor:pointer; transition:all 0.2s; }
+    .filter-btn.active { background:var(--accent); color:#0a0a0b; border-color:var(--accent); font-weight:600; }
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:200; display:none; align-items:center; justify-content:center; padding:1rem; }
+    .modal-overlay.open { display:flex; }
+    .modal { background:var(--bg2); border:1px solid var(--border); border-radius:20px; padding:2rem; max-width:460px; width:100%; }
+    .modal h3 { margin-bottom:0.5rem; }
+    .modal p { font-size:0.9rem; margin-bottom:1.25rem; }
+  </style>
+</head>
+<body>
+
+<div id="page-loader" class="page-loader">
+  <div class="spinner" style="width:36px;height:36px;border-width:3px;"></div>
+</div>
+
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><a href="index.html" class="logo">Grind<span>point</span></a></div>
+    <ul class="sidebar-nav">
+      <li><a href="dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a></li>
+      <li><a href="tasks.html" class="active"><span class="nav-icon">✅</span> Tasks</a></li>
+      <li><a href="leaderboard.html"><span class="nav-icon">🏆</span> Leaderboard</a></li>
+      <li><a href="referral.html"><span class="nav-icon">👥</span> Referrals</a></li>
+      <li><a href="#" id="logout-btn" style="margin-top:2rem;"><span class="nav-icon">🚪</span> Logout</a></li>
+    </ul>
+  </aside>
+
+  <main class="dash-main">
+    <div class="dash-header-bar">
+      <div>
+        <h1>Tasks</h1>
+        <p style="font-size:0.9rem;margin-top:0.2rem;">Complete tasks to earn points</p>
+      </div>
+      <button id="sidebar-toggle" class="nav-mobile-toggle">☰</button>
+    </div>
+
+    <ins class="adsbygoogle" style="display:block;margin-bottom:1.5rem;" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="5544332211" data-ad-format="auto" data-full-width-responsive="true"></ins>
+
+    <!-- Filters -->
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="filterTasks('all', this)">All</button>
+      <button class="filter-btn" onclick="filterTasks('watch_ad', this)">📺 Watch Ads</button>
+      <button class="filter-btn" onclick="filterTasks('social', this)">📱 Social</button>
+      <button class="filter-btn" onclick="filterTasks('transcription', this)">🎙️ Transcription</button>
+      <button class="filter-btn" onclick="filterTasks('app_testing', this)">🧪 App Testing</button>
+      <button class="filter-btn" onclick="filterTasks('data_labeling', this)">🏷️ Data Labeling</button>
+      <button class="filter-btn" onclick="filterTasks('trivia', this)">🧠 Trivia</button>
+      <button class="filter-btn" onclick="filterTasks('mini_game', this)">🎮 Mini-Game</button>
+    </div>
+
+    <div class="tasks-grid" id="tasks-grid">
+      <div style="color:var(--muted);">Loading tasks...</div>
+    </div>
+  </main>
+</div>
+
+<!-- Task modal -->
+<div class="modal-overlay" id="task-modal">
+  <div class="modal">
+    <div id="modal-icon" style="font-size:2.5rem;margin-bottom:0.75rem;"></div>
+    <h3 id="modal-title"></h3>
+    <p id="modal-desc"></p>
+    <div style="background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.2);border-radius:var(--radius-sm);padding:0.75rem 1rem;margin-bottom:1.25rem;font-size:0.88rem;">
+      Reward: <strong id="modal-pts" style="color:var(--accent);"></strong>
+      <span id="modal-review" style="color:var(--muted);"></span>
+    </div>
+    <div id="modal-proof-section" style="display:none;">
+      <div class="form-group">
+        <label class="form-label">Proof / submission (screenshot URL or answer)</label>
+        <input type="text" id="modal-proof" class="form-input" placeholder="Paste link or type your answer"/>
+      </div>
+    </div>
+    <div class="alert alert-error" id="modal-error"></div>
+    <div class="alert alert-success" id="modal-success"></div>
+    <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
+      <button class="btn btn-primary" id="modal-confirm-btn" onclick="confirmTask()">Complete Task</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+  import { supabase } from './js/supabase.js'
+  import { requireAuth, formatPoints, initSidebar, hideLoader, toast } from './js/app.js'
+
+  initSidebar()
+
+  const typeIcons = { watch_ad:'📺', social:'📱', transcription:'🎙️', app_testing:'🧪', data_labeling:'🏷️', trivia:'🧠', mini_game:'🎮', other:'⚡' }
+
+  let allTasks = []
+  let completedIds = []
+  let activeTaskId = null
+  let currentUser = null
+
+  async function init() {
+    const session = await requireAuth()
+    if (!session) return
+    currentUser = session.user
+
+    const [{ data: tasks }, { data: completed }] = await Promise.all([
+      supabase.from('tasks').select('*').eq('is_active', true).order('points', { ascending: false }),
+      supabase.from('task_completions').select('task_id').eq('user_id', currentUser.id)
+    ])
+
+    allTasks = tasks || []
+    completedIds = completed?.map(c => c.task_id) || []
+    renderTasks(allTasks)
+    hideLoader()
+  }
+
+  function renderTasks(tasks) {
+    const grid = document.getElementById('tasks-grid')
+    if (!tasks.length) { grid.innerHTML = '<div style="color:var(--muted);">No tasks available in this category.</div>'; return }
+
+    grid.innerHTML = tasks.map(task => {
+      const done = completedIds.includes(task.id)
+      return `
+        <div class="task-card ${done ? 'completed' : ''}">
+          <div class="task-icon">${typeIcons[task.type] || '⚡'}</div>
+          <div class="task-title">${task.title}</div>
+          <div class="task-desc">${task.description || ''}</div>
+          <div class="task-footer">
+            <span class="task-pts">+${task.points} pts</span>
+            ${done
+              ? '<span class="badge badge-success">✓ Done</span>'
+              : `<button class="btn btn-primary btn-sm" onclick="openTask('${task.id}')">Start</button>`
+            }
+          </div>
+          ${task.requires_review ? '<span class="badge badge-muted" style="width:fit-content;">Needs review</span>' : ''}
+        </div>
+      `
+    }).join('')
+  }
+
+  window.filterTasks = function (type, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'))
+    btn.classList.add('active')
+    renderTasks(type === 'all' ? allTasks : allTasks.filter(t => t.type === type))
+  }
+
+  window.openTask = function (taskId) {
+    const task = allTasks.find(t => t.id === taskId)
+    if (!task) return
+    activeTaskId = taskId
+
+    document.getElementById('modal-icon').textContent = typeIcons[task.type] || '⚡'
+    document.getElementById('modal-title').textContent = task.title
+    document.getElementById('modal-desc').textContent = task.description || ''
+    document.getElementById('modal-pts').textContent = `+${task.points} points`
+    document.getElementById('modal-review').textContent = task.requires_review ? ' · Subject to review' : ' · Instant reward'
+    document.getElementById('modal-proof-section').style.display = task.requires_review ? 'block' : 'none'
+    document.getElementById('modal-proof').value = ''
+    document.getElementById('modal-error').classList.remove('show')
+    document.getElementById('modal-success').classList.remove('show')
+    document.getElementById('modal-confirm-btn').disabled = false
+    document.getElementById('modal-confirm-btn').textContent = 'Complete Task'
+
+    if (task.url) window.open(task.url, '_blank')
+    document.getElementById('task-modal').classList.add('open')
+  }
+
+  window.closeModal = () => document.getElementById('task-modal').classList.remove('open')
+
+  window.confirmTask = async function () {
+    const task = allTasks.find(t => t.id === activeTaskId)
+    const proof = document.getElementById('modal-proof').value.trim()
+    const btn = document.getElementById('modal-confirm-btn')
+    const errorEl = document.getElementById('modal-error')
+    const successEl = document.getElementById('modal-success')
+
+    errorEl.classList.remove('show')
+    if (task.requires_review && !proof) {
+      errorEl.textContent = 'Please provide proof to submit this task.'
+      errorEl.classList.add('show')
+      return
+    }
+
+    btn.disabled = true
+    btn.innerHTML = '<span class="spinner"></span> Submitting...'
+
+    const { error } = await supabase.from('task_completions').insert({
+      user_id: currentUser.id,
+      task_id: activeTaskId,
+      proof: proof || null,
+      status: task.requires_review ? 'pending' : 'approved'
+    })
+
+    if (error) {
+      errorEl.textContent = 'Error submitting task. Try again.'
+      errorEl.classList.add('show')
+      btn.disabled = false
+      btn.textContent = 'Complete Task'
+      return
+    }
+
+    if (!task.requires_review) {
+      await supabase.rpc('increment_points', { user_id: currentUser.id, amount: task.points })
+      await supabase.from('transactions').insert({
+        user_id: currentUser.id, type: 'earn', source: 'task',
+        points: task.points, description: `Completed: ${task.title}`
+      })
+      toast(`+${task.points} points earned! 🔥`, 'success')
+    } else {
+      toast('Task submitted for review!', 'info')
+    }
+
+    completedIds.push(activeTaskId)
+    successEl.textContent = task.requires_review
+      ? '✅ Submitted for review. Points awarded after approval.'
+      : `✅ Done! +${task.points} points added to your balance.`
+    successEl.classList.add('show')
+    btn.textContent = 'Done!'
+    setTimeout(closeModal, 2000)
+    renderTasks(allTasks)
+  }
+
+  document.getElementById('logout-btn').addEventListener('click', async e => {
+    e.preventDefault()
+    await supabase.auth.signOut()
+    window.location.href = 'index.html'
+  })
+
+  init()
+</script>
+<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</body>
+</html>
