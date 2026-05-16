@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Leaderboard — Grindpoint</title>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .podium { display:flex; justify-content:center; align-items:flex-end; gap:1rem; margin-bottom:2.5rem; flex-wrap:wrap; }
+    .podium-item { text-align:center; }
+    .podium-avatar { width:60px;height:60px;border-radius:50%;background:var(--bg3);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto 0.5rem; }
+    .podium-avatar.gold { border-color:#fbbf24; background:rgba(251,191,36,0.1); }
+    .podium-avatar.silver { border-color:#94a3b8; background:rgba(148,163,184,0.1); }
+    .podium-avatar.bronze { border-color:#c2895a; background:rgba(194,137,90,0.1); }
+    .podium-name { font-weight:600;font-size:0.9rem;margin-bottom:0.2rem; }
+    .podium-pts { font-family:'Syne',sans-serif;font-weight:800;color:var(--accent);font-size:0.95rem; }
+    .podium-block { height:80px;background:var(--card);border:1px solid var(--border);border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--muted); }
+    .podium-block.gold { height:110px;border-color:rgba(251,191,36,0.3);color:#fbbf24; }
+    .podium-block.silver { height:90px;border-color:rgba(148,163,184,0.3);color:#94a3b8; }
+    .podium-block.bronze { height:70px;border-color:rgba(194,137,90,0.3);color:#c2895a; }
+  </style>
+</head>
+<body>
+
+<div id="page-loader" class="page-loader">
+  <div class="spinner" style="width:36px;height:36px;border-width:3px;"></div>
+</div>
+
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><a href="index.html" class="logo">Grind<span>point</span></a></div>
+    <ul class="sidebar-nav">
+      <li><a href="dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a></li>
+      <li><a href="tasks.html"><span class="nav-icon">✅</span> Tasks</a></li>
+      <li><a href="leaderboard.html" class="active"><span class="nav-icon">🏆</span> Leaderboard</a></li>
+      <li><a href="referral.html"><span class="nav-icon">👥</span> Referrals</a></li>
+      <li><a href="#" id="logout-btn" style="margin-top:2rem;"><span class="nav-icon">🚪</span> Logout</a></li>
+    </ul>
+  </aside>
+
+  <main class="dash-main">
+    <div class="dash-header-bar">
+      <div>
+        <h1>Leaderboard 🏆</h1>
+        <p style="font-size:0.9rem;margin-top:0.2rem;">Top earners on Grindpoint</p>
+      </div>
+      <button id="sidebar-toggle" class="nav-mobile-toggle">☰</button>
+    </div>
+
+    <ins class="adsbygoogle" style="display:block;margin-bottom:1.5rem;" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="9988776655" data-ad-format="auto" data-full-width-responsive="true"></ins>
+
+    <!-- Podium top 3 -->
+    <div class="podium" id="podium"></div>
+
+    <!-- Full list -->
+    <div class="card">
+      <h3 style="margin-bottom:1.25rem;font-size:1rem;">All Rankings</h3>
+      <div id="lb-list"><div style="color:var(--muted);">Loading...</div></div>
+    </div>
+
+    <!-- User rank -->
+    <div class="card" id="my-rank-card" style="margin-top:1rem;display:none;background:rgba(245,166,35,0.05);border-color:rgba(245,166,35,0.3);">
+      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:0.3rem;">Your position</div>
+      <div id="my-rank-display" style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:var(--accent);"></div>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+  import { supabase } from './js/supabase.js'
+  import { requireAuth, formatPoints, initSidebar, hideLoader } from './js/app.js'
+
+  initSidebar()
+
+  async function init() {
+    const session = await requireAuth()
+    if (!session) return
+    const currentUserId = session.user.id
+
+    const { data: users } = await supabase
+      .from('users')
+      .select('id, name, points')
+      .order('points', { ascending: false })
+      .limit(50)
+
+    if (!users?.length) { hideLoader(); return }
+
+    // Podium — top 3
+    const top3 = users.slice(0, 3)
+    const podiumOrder = [top3[1], top3[0], top3[2]].filter(Boolean) // silver, gold, bronze
+    const classes = ['silver', 'gold', 'bronze']
+    const labels = ['2nd', '1st', '3rd']
+
+    document.getElementById('podium').innerHTML = podiumOrder.map((u, i) => `
+      <div class="podium-item">
+        <div class="podium-avatar ${classes[i]}">👤</div>
+        <div class="podium-name">${u.name.split(' ')[0]}</div>
+        <div class="podium-pts">${formatPoints(u.points)} pts</div>
+        <div class="podium-block ${classes[i]}">${labels[i]}</div>
+      </div>
+    `).join('')
+
+    // Full list
+    const rankClasses = ['gold', 'silver', 'bronze']
+    document.getElementById('lb-list').innerHTML = users.map((u, i) => `
+      <div class="lb-item" style="${u.id === currentUserId ? 'background:rgba(245,166,35,0.06);border-color:rgba(245,166,35,0.3);' : ''}">
+        <div class="lb-rank ${rankClasses[i] || ''}">${i + 1}</div>
+        <div class="lb-name">${u.name} ${u.id === currentUserId ? '<span class="badge badge-accent" style="font-size:0.7rem;">You</span>' : ''}</div>
+        <div class="lb-pts">${formatPoints(u.points)} pts</div>
+      </div>
+    `).join('')
+
+    // My rank card
+    const myRank = users.findIndex(u => u.id === currentUserId)
+    if (myRank !== -1) {
+      document.getElementById('my-rank-card').style.display = 'block'
+      document.getElementById('my-rank-display').textContent = `#${myRank + 1} of ${users.length} — ${formatPoints(users[myRank].points)} points`
+    }
+
+    hideLoader()
+  }
+
+  document.getElementById('logout-btn').addEventListener('click', async e => {
+    e.preventDefault()
+    await supabase.auth.signOut()
+    window.location.href = 'index.html'
+  })
+
+  init()
+</script>
+<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</body>
+</html>
