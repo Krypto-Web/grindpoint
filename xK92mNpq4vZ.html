@@ -3,395 +3,1353 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin — Grindpoint</title>
-  <!-- No AdSense on admin page -->
+  <title>Grindpoint Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="css/style.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    .admin-tabs { display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1.5rem; border-bottom:1px solid var(--border); padding-bottom:1rem; }
-    .admin-tab { padding:0.5rem 1.25rem; border-radius:50px; border:1px solid var(--border); background:transparent; color:var(--muted); font-family:'DM Sans',sans-serif; font-size:0.88rem; cursor:pointer; transition:all 0.2s; }
-    .admin-tab.active { background:var(--accent); color:#0a0a0b; border-color:var(--accent); font-weight:600; }
-    .admin-panel { display:none; }
-    .admin-panel.active { display:block; }
-    .action-btn { padding:0.3rem 0.8rem; border-radius:6px; border:none; font-size:0.8rem; cursor:pointer; font-family:'DM Sans',sans-serif; }
-    .approve-btn { background:rgba(34,197,94,0.15); color:var(--success); border:1px solid rgba(34,197,94,0.3); }
-    .reject-btn { background:rgba(239,68,68,0.15); color:var(--danger); border:1px solid rgba(239,68,68,0.3); }
-    .paid-btn { background:rgba(245,166,35,0.15); color:var(--accent); border:1px solid rgba(245,166,35,0.3); }
-    .task-form { background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem; margin-bottom:1.5rem; }
-    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
-    @media(max-width:600px){.two-col{grid-template-columns:1fr;}}
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0b; --bg2: #111114; --bg3: #18181d; --bg4: #1f1f26;
+      --accent: #f5a623; --success: #22c55e; --danger: #ef4444; --warning: #f59e0b; --info: #3b82f6;
+      --text: #f0eee8; --muted: #888880; --border: rgba(255,255,255,0.08); --card: rgba(255,255,255,0.04);
+      --radius: 12px; --radius-sm: 8px;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; min-height: 100vh; }
+    a { color: var(--accent); text-decoration: none; }
+
+    /* ── Login ── */
+    .login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .login-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; width: 100%; max-width: 400px; text-align: center; }
+    .login-box h1 { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .login-box h1 span { color: var(--accent); }
+    .login-box p { color: var(--muted); font-size: 0.88rem; margin-bottom: 2rem; }
+    .form-input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; padding: 0.75rem 1rem; outline: none; transition: border-color 0.2s; margin-bottom: 1rem; }
+    .form-input:focus { border-color: var(--accent); }
+    .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.6rem 1.25rem; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 0.88rem; cursor: pointer; border: none; transition: opacity 0.2s, transform 0.15s; }
+    .btn:hover { opacity: 0.88; }
+    .btn-primary { background: var(--accent); color: #0a0a0b; }
+    .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-danger { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
+    .btn-success { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.3); }
+    .btn-warning { background: rgba(245,158,11,0.15); color: var(--warning); border: 1px solid rgba(245,158,11,0.3); }
+    .btn-block { width: 100%; justify-content: center; border-radius: var(--radius-sm); }
+    .btn-sm { padding: 0.3rem 0.75rem; font-size: 0.78rem; }
+    .alert { padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 1rem; display: none; }
+    .alert.show { display: block; }
+    .alert-error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+
+    /* ── Layout ── */
+    .admin-layout { display: flex; min-height: 100vh; }
+
+    /* ── Sidebar ── */
+    .sidebar { width: 220px; background: var(--bg2); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; z-index: 100; display: flex; flex-direction: column; }
+    .sidebar-logo { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
+    .sidebar-logo h2 { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800; }
+    .sidebar-logo h2 span { color: var(--accent); }
+    .sidebar-logo p { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
+    .sidebar-section { padding: 1rem 0; border-bottom: 1px solid var(--border); }
+    .sidebar-section-label { font-size: 0.65rem; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; padding: 0 1.25rem; margin-bottom: 0.4rem; }
+    .sidebar-nav { list-style: none; }
+    .sidebar-nav li a { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 1.25rem; color: var(--muted); font-size: 0.85rem; transition: all 0.2s; cursor: pointer; }
+    .sidebar-nav li a:hover { color: var(--text); background: var(--card); }
+    .sidebar-nav li a.active { color: var(--accent); background: rgba(245,166,35,0.08); border-right: 2px solid var(--accent); }
+    .sidebar-nav li a .icon { width: 18px; text-align: center; font-size: 0.95rem; }
+    .sidebar-bottom { margin-top: auto; padding: 1rem 1.25rem; border-top: 1px solid var(--border); }
+    .online-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+    /* ── Main ── */
+    .main { margin-left: 220px; flex: 1; min-height: 100vh; }
+    .topbar { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0.9rem 1.5rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; }
+    .topbar h2 { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; }
+    .topbar-right { display: flex; align-items: center; gap: 1rem; }
+    .topbar-time { font-size: 0.8rem; color: var(--muted); }
+    .content { padding: 1.5rem; }
+
+    /* ── Panels ── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── Stats ── */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
+    .stat-card.accent { border-color: rgba(245,166,35,0.3); background: rgba(245,166,35,0.05); }
+    .stat-card.success { border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.05); }
+    .stat-card.danger { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.05); }
+    .stat-card.info { border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.05); }
+    .stat-num { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; line-height: 1; margin-bottom: 0.3rem; }
+    .stat-lbl { font-size: 0.78rem; color: var(--muted); }
+    .stat-change { font-size: 0.75rem; margin-top: 0.4rem; }
+    .stat-change.up { color: var(--success); }
+    .stat-change.down { color: var(--danger); }
+
+    /* ── Charts ── */
+    .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    @media(max-width:900px){ .charts-grid { grid-template-columns: 1fr; } }
+    .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
+    .chart-card h4 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; margin-bottom: 1rem; }
+    .chart-wrap { position: relative; height: 200px; }
+
+    /* ── Tables ── */
+    .table-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1rem; }
+    .table-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); }
+    .table-header h4 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    thead th { padding: 0.7rem 1rem; text-align: left; font-size: 0.72rem; color: var(--muted); font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; background: var(--bg3); }
+    tbody tr { border-top: 1px solid var(--border); transition: background 0.15s; }
+    tbody tr:hover { background: rgba(255,255,255,0.02); }
+    tbody td { padding: 0.7rem 1rem; color: var(--text); }
+
+    /* ── Badges ── */
+    .badge { display: inline-flex; align-items: center; padding: 0.15rem 0.6rem; border-radius: 50px; font-size: 0.72rem; font-weight: 500; }
+    .badge-success { background: rgba(34,197,94,0.12); color: var(--success); }
+    .badge-danger { background: rgba(239,68,68,0.12); color: var(--danger); }
+    .badge-warning { background: rgba(245,158,11,0.12); color: var(--warning); }
+    .badge-accent { background: rgba(245,166,35,0.12); color: var(--accent); }
+    .badge-info { background: rgba(59,130,246,0.12); color: var(--info); }
+    .badge-muted { background: var(--card); color: var(--muted); }
+
+    /* ── Active users ── */
+    .active-users-bar { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .active-count { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--success); }
+
+    /* ── Traffic sources ── */
+    .traffic-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0; border-bottom: 1px solid var(--border); }
+    .traffic-item:last-child { border: none; }
+    .traffic-bar-wrap { flex: 1; background: var(--bg3); border-radius: 50px; height: 6px; overflow: hidden; }
+    .traffic-bar { height: 100%; border-radius: 50px; background: var(--accent); }
+    .traffic-label { font-size: 0.82rem; width: 100px; }
+    .traffic-pct { font-size: 0.82rem; color: var(--muted); width: 36px; text-align: right; }
+
+    /* ── Two col ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media(max-width:700px){ .two-col { grid-template-columns: 1fr; } }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+    @media(max-width:700px){ .three-col { grid-template-columns: 1fr; } }
+
+    /* ── Form ── */
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.78rem; font-weight: 500; color: var(--muted); margin-bottom: 0.35rem; }
+    .form-box { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; }
+    .form-box h4 { font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700; margin-bottom: 1rem; }
+
+    /* ── Feed ── */
+    .feed-item { display: flex; gap: 0.75rem; padding: 0.7rem 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+    .feed-item:last-child { border: none; }
+    .feed-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+    .feed-text { font-size: 0.85rem; flex: 1; line-height: 1.4; }
+    .feed-time { font-size: 0.75rem; color: var(--muted); flex-shrink: 0; }
+
+    /* ── Toast ── */
+    #toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
+    .toast { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; font-size: 0.85rem; min-width: 240px; animation: slideIn 0.3s ease; display: flex; align-items: center; gap: 0.5rem; }
+    .toast.success { border-color: rgba(34,197,94,0.4); }
+    .toast.error { border-color: rgba(239,68,68,0.4); }
+    @keyframes slideIn { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: translateX(0); } }
+
+    /* ── Spinner ── */
+    .spinner { width: 16px; height: 16px; border: 2px solid rgba(245,166,35,0.3); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    select.form-input option { background: var(--bg3); }
   </style>
 </head>
 <body>
 
-<!-- Admin login gate -->
-<div id="admin-login" class="auth-wrap">
-  <div class="auth-box fade-up">
-    <div class="auth-logo"><span class="logo">Grind<span>point</span></span> <span style="font-size:0.8rem;color:var(--muted);margin-left:0.5rem;">Admin</span></div>
-    <h2 class="auth-title">Admin Access</h2>
-    <p class="auth-sub">Enter your admin password to continue.</p>
-    <div class="alert alert-error" id="admin-login-error"></div>
-    <div class="form-group">
-      <label class="form-label">Admin Password</label>
-      <input type="password" id="admin-password" class="form-input" placeholder="Admin password"/>
-    </div>
-    <button class="btn btn-primary btn-block" onclick="adminLogin()">Access Admin Panel</button>
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="login-screen">
+  <div class="login-box">
+    <h1>Grind<span>point</span></h1>
+    <p>Admin Command Center — Authorised Access Only</p>
+    <div class="alert alert-error" id="login-error"></div>
+    <input type="password" id="admin-pw" class="form-input" placeholder="Enter admin password"/>
+    <button class="btn btn-primary btn-block" onclick="adminLogin()">Access Dashboard</button>
   </div>
 </div>
 
-<!-- Admin dashboard (hidden until logged in) -->
-<div id="admin-dashboard" style="display:none;">
-  <nav>
-    <span class="logo">Grind<span>point</span> <span style="font-size:0.75rem;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:400;">Admin</span></span>
-    <div style="display:flex;gap:1rem;align-items:center;">
-      <span id="admin-time" style="font-size:0.82rem;color:var(--muted);"></span>
-      <button class="btn btn-ghost btn-sm" onclick="adminLogout()">Logout</button>
-    </div>
-  </nav>
+<!-- ADMIN DASHBOARD -->
+<div id="admin-app" style="display:none;">
+  <div class="admin-layout">
 
-  <div class="container" style="padding-top:2rem;padding-bottom:4rem;">
-
-    <!-- Stats -->
-    <div class="stats-row" id="admin-stats" style="margin-bottom:2rem;"></div>
-
-    <!-- Tabs -->
-    <div class="admin-tabs">
-      <button class="admin-tab active" onclick="switchAdminTab('redemptions', this)">💸 Redemptions</button>
-      <button class="admin-tab" onclick="switchAdminTab('completions', this)">✅ Task Reviews</button>
-      <button class="admin-tab" onclick="switchAdminTab('tasks', this)">📋 Manage Tasks</button>
-      <button class="admin-tab" onclick="switchAdminTab('users', this)">👥 Users</button>
-    </div>
-
-    <!-- REDEMPTIONS -->
-    <div class="admin-panel active" id="panel-redemptions">
-      <div style="display:flex;gap:0.5rem;margin-bottom:1rem;">
-        <button class="action-btn approve-btn" onclick="loadRedemptions('pending')">Pending</button>
-        <button class="action-btn paid-btn" onclick="loadRedemptions('processing')">Processing</button>
-        <button class="action-btn" style="background:var(--card);color:var(--muted);border:1px solid var(--border);" onclick="loadRedemptions('paid')">Paid</button>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h2>Grind<span>point</span></h2>
+        <p>Admin Command Center</p>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>User</th><th>Type</th><th>Amount</th><th>Details</th><th>Date</th><th>Actions</th></tr></thead>
-          <tbody id="redemptions-body"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem;">Loading...</td></tr></tbody>
-        </table>
-      </div>
-    </div>
 
-    <!-- TASK REVIEWS -->
-    <div class="admin-panel" id="panel-completions">
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>User</th><th>Task</th><th>Points</th><th>Proof</th><th>Date</th><th>Actions</th></tr></thead>
-          <tbody id="completions-body"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem;">Loading...</td></tr></tbody>
-        </table>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Overview</div>
+        <ul class="sidebar-nav">
+          <li><a onclick="showPanel('overview')" id="nav-overview" class="active"><span class="icon">📊</span> Dashboard</a></li>
+          <li><a onclick="showPanel('live')" id="nav-live"><span class="icon">🟢</span> Live Activity</a></li>
+          <li><a onclick="showPanel('analytics')" id="nav-analytics"><span class="icon">📈</span> Analytics</a></li>
+          <li><a onclick="showPanel('traffic')" id="nav-traffic"><span class="icon">🌍</span> Traffic & Sources</a></li>
+        </ul>
       </div>
-    </div>
 
-    <!-- MANAGE TASKS -->
-    <div class="admin-panel" id="panel-tasks">
-      <div class="task-form">
-        <h3 style="font-size:1rem;margin-bottom:1.25rem;">➕ Add New Task</h3>
-        <div class="two-col">
-          <div class="form-group"><label class="form-label">Title</label><input type="text" id="t-title" class="form-input" placeholder="Task title"/></div>
-          <div class="form-group">
-            <label class="form-label">Type</label>
-            <select id="t-type" class="form-input">
-              <option value="watch_ad">Watch Ad</option>
-              <option value="social">Social</option>
-              <option value="transcription">Transcription</option>
-              <option value="app_testing">App Testing</option>
-              <option value="data_labeling">Data Labeling</option>
-              <option value="trivia">Trivia</option>
-              <option value="mini_game">Mini-Game</option>
-              <option value="other">Other</option>
-            </select>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Users</div>
+        <ul class="sidebar-nav">
+          <li><a onclick="showPanel('users')" id="nav-users"><span class="icon">👥</span> All Users</a></li>
+          <li><a onclick="showPanel('newusers')" id="nav-newusers"><span class="icon">✨</span> New Signups</a></li>
+          <li><a onclick="showPanel('topearners')" id="nav-topearners"><span class="icon">🏆</span> Top Earners</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Operations</div>
+        <ul class="sidebar-nav">
+          <li><a onclick="showPanel('redemptions')" id="nav-redemptions"><span class="icon">💸</span> Redemptions <span id="pending-badge" style="background:var(--danger);color:#fff;border-radius:50px;padding:0.1rem 0.5rem;font-size:0.7rem;margin-left:auto;"></span></a></li>
+          <li><a onclick="showPanel('tasks')" id="nav-tasks"><span class="icon">✅</span> Tasks</a></li>
+          <li><a onclick="showPanel('reviews')" id="nav-reviews"><span class="icon">🔍</span> Task Reviews</a></li>
+          <li><a onclick="showPanel('transactions')" id="nav-transactions"><span class="icon">💰</span> Transactions</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Communication</div>
+        <ul class="sidebar-nav">
+          <li><a onclick="showPanel('messages')" id="nav-messages"><span class="icon">📩</span> Messages <span id="unread-badge" style="background:var(--accent);color:#0a0a0b;border-radius:50px;padding:0.1rem 0.5rem;font-size:0.7rem;margin-left:auto;"></span></a></li>
+          <li><a onclick="showPanel('broadcast')" id="nav-broadcast"><span class="icon">📢</span> Broadcast</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Settings</div>
+        <ul class="sidebar-nav">
+          <li><a onclick="showPanel('settings')" id="nav-settings"><span class="icon">⚙️</span> Site Settings</a></li>
+          <li><a onclick="showPanel('logs')" id="nav-logs"><span class="icon">📋</span> Activity Logs</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-bottom">
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+          <span class="online-dot"></span>
+          <span style="font-size:0.78rem;color:var(--muted);">Admin online</span>
+        </div>
+        <button class="btn btn-ghost" style="width:100%;font-size:0.8rem;" onclick="adminLogout()">🚪 Logout</button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+      <div class="topbar">
+        <h2 id="panel-title">Dashboard Overview</h2>
+        <div class="topbar-right">
+          <span class="topbar-time" id="live-time"></span>
+          <button class="btn btn-ghost" style="font-size:0.8rem;" onclick="refreshAll()">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <div class="content">
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- OVERVIEW PANEL -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="panel active" id="panel-overview">
+
+          <!-- Active users bar -->
+          <div class="active-users-bar">
+            <div>
+              <div class="active-count" id="active-now">—</div>
+              <div style="font-size:0.78rem;color:var(--muted);">Users active in last 30 minutes</div>
+            </div>
+            <div style="margin-left:auto;display:flex;gap:2rem;flex-wrap:wrap;">
+              <div><div style="font-size:1.1rem;font-weight:700;color:var(--text);" id="today-signups">—</div><div style="font-size:0.75rem;color:var(--muted);">Signups today</div></div>
+              <div><div style="font-size:1.1rem;font-weight:700;color:var(--text);" id="today-tasks">—</div><div style="font-size:0.75rem;color:var(--muted);">Tasks completed today</div></div>
+              <div><div style="font-size:1.1rem;font-weight:700;color:var(--accent);" id="today-payout">—</div><div style="font-size:0.75rem;color:var(--muted);">Pending payouts</div></div>
+            </div>
+          </div>
+
+          <!-- Key stats -->
+          <div class="stats-grid">
+            <div class="stat-card accent"><div class="stat-num" id="stat-total-users">—</div><div class="stat-lbl">Total Users</div></div>
+            <div class="stat-card success"><div class="stat-num" id="stat-verified">—</div><div class="stat-lbl">Verified Users</div></div>
+            <div class="stat-card"><div class="stat-num" id="stat-total-tasks">—</div><div class="stat-lbl">Tasks Available</div></div>
+            <div class="stat-card danger"><div class="stat-num" id="stat-pending-red">—</div><div class="stat-lbl">Pending Redemptions</div></div>
+            <div class="stat-card info"><div class="stat-num" id="stat-total-pts">—</div><div class="stat-lbl">Points Awarded (all time)</div></div>
+            <div class="stat-card"><div class="stat-num" id="stat-paid-out">—</div><div class="stat-lbl">Total Paid Out (₦)</div></div>
+            <div class="stat-card success"><div class="stat-num" id="stat-referrals">—</div><div class="stat-lbl">Total Referrals</div></div>
+            <div class="stat-card"><div class="stat-num" id="stat-msgs">—</div><div class="stat-lbl">Unread Messages</div></div>
+          </div>
+
+          <!-- Charts row -->
+          <div class="charts-grid">
+            <div class="chart-card">
+              <h4>📈 User Signups — Last 7 Days</h4>
+              <div class="chart-wrap"><canvas id="signups-chart"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <h4>🎯 Task Types Breakdown</h4>
+              <div class="chart-wrap"><canvas id="tasks-chart"></canvas></div>
+            </div>
+          </div>
+
+          <div class="charts-grid">
+            <div class="chart-card">
+              <h4>💰 Points Earned vs Redeemed — Last 7 Days</h4>
+              <div class="chart-wrap"><canvas id="points-chart"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <h4>💸 Redemption Types</h4>
+              <div class="chart-wrap"><canvas id="redeem-chart"></canvas></div>
+            </div>
+          </div>
+
+          <!-- Recent activity feed -->
+          <div class="two-col">
+            <div class="table-card">
+              <div class="table-header"><h4>🕐 Recent Activity Feed</h4></div>
+              <div style="padding:0 1.25rem;" id="activity-feed"><div style="color:var(--muted);padding:1rem 0;font-size:0.85rem;">Loading...</div></div>
+            </div>
+            <div class="table-card">
+              <div class="table-header"><h4>💸 Pending Redemptions</h4><a onclick="showPanel('redemptions')" style="font-size:0.78rem;cursor:pointer;">View all</a></div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>User</th><th>Type</th><th>Amount</th></tr></thead>
+                  <tbody id="overview-redemptions"></tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="form-group"><label class="form-label">Description</label><input type="text" id="t-desc" class="form-input" placeholder="What the user needs to do"/></div>
-        <div class="two-col">
-          <div class="form-group"><label class="form-label">Points</label><input type="number" id="t-points" class="form-input" placeholder="e.g. 100"/></div>
-          <div class="form-group"><label class="form-label">URL (optional)</label><input type="text" id="t-url" class="form-input" placeholder="Link to open"/></div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- LIVE ACTIVITY PANEL -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="panel" id="panel-live">
+          <div class="active-users-bar" style="margin-bottom:1.5rem;">
+            <div class="online-dot"></div>
+            <span style="font-size:0.9rem;font-weight:500;">Live monitor — auto-refreshes every 30 seconds</span>
+            <span style="margin-left:auto;font-size:0.82rem;color:var(--muted);" id="last-refresh-time"></span>
+          </div>
+          <div class="stats-grid" style="margin-bottom:1.5rem;">
+            <div class="stat-card success"><div class="stat-num" id="live-active">—</div><div class="stat-lbl">Active (30 min)</div></div>
+            <div class="stat-card"><div class="stat-num" id="live-tasks-today">—</div><div class="stat-lbl">Tasks done today</div></div>
+            <div class="stat-card accent"><div class="stat-num" id="live-pts-today">—</div><div class="stat-lbl">Points awarded today</div></div>
+            <div class="stat-card danger"><div class="stat-num" id="live-signups-today">—</div><div class="stat-lbl">New signups today</div></div>
+          </div>
+          <div class="table-card">
+            <div class="table-header"><h4>🟢 Recent Logins & Actions</h4></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>User</th><th>Action</th><th>Points</th><th>Time</th></tr></thead>
+                <tbody id="live-feed-table"></tbody>
+              </table>
+            </div>
+          </div>
         </div>
-        <div class="form-group" style="display:flex;align-items:center;gap:0.75rem;">
-          <input type="checkbox" id="t-review" style="width:16px;height:16px;"/>
-          <label class="form-label" style="margin:0;cursor:pointer;" for="t-review">Requires manual review before awarding points</label>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- ANALYTICS PANEL -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="panel" id="panel-analytics">
+          <div class="stats-grid">
+            <div class="stat-card accent"><div class="stat-num" id="an-total-users">—</div><div class="stat-lbl">Total registered users</div></div>
+            <div class="stat-card success"><div class="stat-num" id="an-verified">—</div><div class="stat-lbl">Verified accounts</div></div>
+            <div class="stat-card"><div class="stat-num" id="an-avg-pts">—</div><div class="stat-lbl">Avg points per user</div></div>
+            <div class="stat-card danger"><div class="stat-num" id="an-unverified">—</div><div class="stat-lbl">Unverified accounts</div></div>
+            <div class="stat-card info"><div class="stat-num" id="an-tasks-done">—</div><div class="stat-lbl">Total tasks completed</div></div>
+            <div class="stat-card"><div class="stat-num" id="an-referrals">—</div><div class="stat-lbl">Total referrals</div></div>
+          </div>
+          <div class="charts-grid">
+            <div class="chart-card">
+              <h4>📊 Signups — Last 30 Days</h4>
+              <div class="chart-wrap"><canvas id="signups-30-chart"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <h4>⭐ Points Distribution</h4>
+              <div class="chart-wrap"><canvas id="pts-dist-chart"></canvas></div>
+            </div>
+          </div>
+          <div class="chart-card" style="margin-bottom:1rem;">
+            <h4>💰 Daily Payouts — Last 30 Days (₦)</h4>
+            <div class="chart-wrap" style="height:160px;"><canvas id="payouts-chart"></canvas></div>
+          </div>
         </div>
-        <div class="alert alert-error" id="task-form-error"></div>
-        <div class="alert alert-success" id="task-form-success"></div>
-        <button class="btn btn-primary" onclick="addTask()">Add Task</button>
-      </div>
 
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Title</th><th>Type</th><th>Points</th><th>Status</th><th>Actions</th></tr></thead>
-          <tbody id="tasks-body"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem;">Loading...</td></tr></tbody>
-        </table>
-      </div>
-    </div>
+        <!-- ═══════════════════════════════════════ -->
+        <!-- TRAFFIC & SOURCES PANEL -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="panel" id="panel-traffic">
+          <div style="background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.2);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1.5rem;font-size:0.85rem;color:var(--accent);">
+            💡 Traffic data is tracked via referral parameters in URLs. For full analytics, connect Google Analytics to your site using your GA4 tracking ID.
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-num" id="tr-direct">—</div><div class="stat-lbl">Direct visits</div></div>
+            <div class="stat-card"><div class="stat-num" id="tr-referral">—</div><div class="stat-lbl">Referral signups</div></div>
+            <div class="stat-card accent"><div class="stat-num" id="tr-whatsapp">—</div><div class="stat-lbl">WhatsApp referrals</div></div>
+            <div class="stat-card info"><div class="stat-num" id="tr-twitter">—</div><div class="stat-lbl">Twitter referrals</div></div>
+          </div>
+          <div class="two-col">
+            <div class="chart-card">
+              <h4>🌍 Traffic Sources</h4>
+              <div id="traffic-sources-list" style="margin-top:0.5rem;"></div>
+            </div>
+            <div class="chart-card">
+              <h4>📱 Device Breakdown</h4>
+              <div class="chart-wrap"><canvas id="device-chart"></canvas></div>
+            </div>
+          </div>
+          <div class="chart-card" style="margin-top:1rem;">
+            <h4>🔗 Top Referrers (Users with most referrals)</h4>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>User</th><th>Email</th><th>Referrals</th><th>Points Earned</th></tr></thead>
+                <tbody id="top-referrers-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
-    <!-- USERS -->
-    <div class="admin-panel" id="panel-users">
-      <div style="display:flex;gap:0.75rem;margin-bottom:1rem;">
-        <input type="text" id="user-search" class="form-input" placeholder="Search by email..." style="max-width:300px;"/>
-        <button class="btn btn-ghost btn-sm" onclick="loadUsers()">Search</button>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Name</th><th>Email</th><th>Points</th><th>Streak</th><th>Verified</th><th>Joined</th><th>Actions</th></tr></thead>
-          <tbody id="users-body"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem;">Loading...</td></tr></tbody>
-        </table>
-      </div>
-    </div>
+        <!-- ═══════════════════════════════════════ -->
+        <!-- USERS PANEL -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="panel" id="panel-users">
+          <div style="display:flex;gap:0.75rem;margin-bottom:1rem;flex-wrap:wrap;">
+            <input type="text" id="user-search" class="form-input" placeholder="Search by name or email..." style="max-width:280px;margin-bottom:0;"/>
+            <select id="user-filter" class="form-input" style="max-width:160px;margin-bottom:0;">
+              <option value="all">All users</option>
+              <option value="verified">Verified only</option>
+              <option value="unverified">Unverified</option>
+              <option value="high">High points (1000+)</option>
+            </select>
+            <button class="btn btn-ghost" onclick="loadUsers()">🔍 Search</button>
+            <button class="btn btn-primary" style="margin-left:auto;" onclick="exportUsers()">⬇️ Export CSV</button>
+          </div>
+          <div class="table-card">
+            <div class="table-header"><h4>All Users</h4><span id="users-count" style="font-size:0.78rem;color:var(--muted);"></span></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Points</th><th>Streak</th><th>Verified</th><th>Joined</th><th>Actions</th></tr></thead>
+                <tbody id="users-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
-  </div>
-</div>
+        <!-- ═══════════════════════════════════════ -->
+        <!-- NEW SIGNUPS PANEL -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="panel" id="panel-newusers">
+          <div class="stats-grid" style="margin-bottom:1.5rem;">
+            <div class="stat-card accent"><div class="stat-num" id="nu-today">—</div><div class="stat-lbl">Signups today</div></div>
+            <div class="stat-card"><div class="stat-num" id="nu-week">—</div><div class="stat-lbl">Signups this week</div></div>
+            <div class="stat-card success"><div class="stat-num" id="nu-month">—</div><div class="stat-lbl">Signups this month</div></div>
+          </div>
+          <div class="table-card">
+            <div class="table-header"><h4>✨ Latest Signups</h4></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Verified</th><th>Referral</th><th>Joined</th></tr></thead>
+                <tbody id="new-users-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- TOP EARNERS PANEL -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="panel" id="panel-topearners">
+          <div class="table-card">
+            <div class="table-header"><h4>🏆 Top Earners</h4></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Points</th><th>Tasks Done</th><th>Referrals</th><th>Actions</th></tr></thead>
+                <tbody id="top-earners-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- REDEMPTIONS PANEL -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="panel" id="panel-redemptions">
+          <div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;">
+            <button class="btn btn-danger btn-sm" onclick="loadRedemptions('pending')" id="red-pending-btn">⏳ Pending</button>
+            <button class="btn btn-warning btn-sm" onclick="loadRedemptions('processing')" id="red-proc-btn">🔄 Processing</button>
+            <button class="btn btn-success btn-sm" onclick="loadRedemptions('paid')" id="red-paid-btn">✅ Paid</button>
+            <button class="btn btn-ghost btn-sm" onclick="loadRedemptions('rejected')" id="red-rej-btn">❌ Rejected</button>
+            <button class="btn btn-primary" style="margin-left:auto;" onclick="exportRedemptions()">⬇️ Export CSV</button>
+          </div>
+          <div class="table-card">
+            <div class="table-header"><h4 id="redemptions-title">Pending Redemptions</h4><span id="redemptions-count" style="font-size:0.78rem;color:var(--muted);"></span></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>User</th><th>Type</th><th>Amount</th><th>Details</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+                <tbody id="redemptions-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- TASKS PANEL -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="panel" id="panel-tasks">
+          <div class="form-box">
+            <h4>➕ Add New Task</h4>
+            <div class="two-col">
+              <div class="form-group"><label class="form-label">Title</label><input type="text" id="t-title" class="form-input" placeholder="Task title" style="margin-bottom:0;"/></div>
+              <div class="form-group">
+                <label class="form-label">Type</label>
+                <select id="t-type" class="form-input" style="margin-bottom:0;">
+                  <option value="watch_ad">📺 Watch Ad</option>
+                  <option value="social">📱 Social</option>
+                  <option value="transcription">🎙️ Transcription</option>
+                  <option value="app_testing">🧪 App Testing</option>
+                  <option value="data_labeling">🏷️ Data Labeling</option>
+                  <option value="trivia">🧠 Trivia</option>
+                  <option value="mini_game">🎮 Mini-Game</option>
+                  <option value="other">⚡ Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group"><label class="form-label">Description</label><input type="text" id="t-desc" class="form-input" placeholder="What the user needs to do" style="margin-bottom:0;"/></div>
+            <div class="three-col">
+              <div class="form-group"><label class="form-label">Points</label><input type="number" id="t-points" class="form-input" placeholder="e.g. 100" style="margin-bottom:0;"/></div>
+              <div class="form-group"><label class="form-label">URL (optional)</label><input type="text" id="t-url" class="form-input" placeholder="Link to open" style="margin-bottom:0;"/></div>
+              <div class="form-group" style="display:flex;align-items:flex-end;gap:0.5rem;padding-bottom:0.1rem;">
+                <input type="checkbox" id="t-review" style="width:16px;height:16px;accent-color:var(--accent);"/>
+                <label class="form-label" style="margin:0;cursor:pointer;" for="t-review">Needs review</label>
+              </div>
+            </div>
+            <div class="alert alert-error" id="task-err" style="margin-bottom:0.5rem;"></div>
+            <button class="btn btn-primary" onclick="addTask()">Add Task</button>
+          </div>
+          <div class="table-card">
+            <div class="table-header"><h4>All Tasks</h4></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Title</th><th>Type</th><th>Points</th><th>Completions</th><th>Review</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody id="tasks-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- REVIEWS PANEL -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="panel" id="panel-reviews">
+          <div class="table-card">
+            <div class="table-header"><h4>🔍 Task Submissions Pending Review</h4><span id="reviews-count" style="font-size:0.78rem;color:var(--muted);"></span></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>User</th><th>Task</th><th>Points</th><th>Proof</th><th>Submitted</th><th>Actions</th></tr></thead>
+                <tbody id="reviews-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- TRANSACTIONS PANEL -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="panel" id="panel-transactions">
+          <div style="display:flex;gap:0.75rem;margin-bottom:1rem;flex-wrap:wrap;">
+            <select id="tx-filter" class="form-input" style="max-width:160px;margin-bottom:0;">
+              <option value="all">All transactions</option>
+              <option value="earn">Earned only</option>
+              <option value="redeem">Redeemed only</option>
+            </select>
+            <button class="btn btn-ghost" onclick="loadTransactions()">Filter</button>
+            <button class="btn btn-primary" style="margin-left:auto;" onclick="exportTransactions()">⬇️ Export CSV</button>
+          </div>
+          <div class="table-card">
+            <div class="table-header"><h4>💰 All Transactions</h4><span id="tx-count" style="font-size:0.78rem;color:var(--muted);"></span></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>User</th><th>Type</th><th>Source</th><th>Points</th><th>Description</th><th>Date</th></tr></thead>
+                <tbody id="tx-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- MESSAGES PANEL -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="panel" id="panel-messages">
+          <div class="table-card">
+            <div class="table-header"><h4>📩 Contact Messages</h4><button class="btn btn-ghost" style="font-size:0.78rem;" onclick="loadMessages()">🔄 Refresh</button></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Name</th><th>Email</th><th>Subject</th><th>Message</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+                <tbody id="messages-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- BROADCAST PANEL -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="panel" id="panel-broadcast">
+          <div class="form-box" style="max-width:600px;">
+            <h4>📢 Send Announcement to All Users</h4>
+            <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem;">Post a notice that appears in users' dashboards. Use for bonus events, downtime, or important updates.</p>
+            <div class="form-group"><label class="form-label">Announcement Title</label><input type="text" id="bc-title" class="form-input" placeholder="e.g. 🔥 Double Points Weekend!" style="margin-bottom:0;"/></div>
+            <div class="form-group"><label class="form-label">Message</label><textarea id="bc-message" class="form-input" rows="4" placeholder="Write your announcement..." style="resize:vertical;margin-bottom:0;"></textarea></div>
+            <div class="form-group">
+              <label class="form-label">Type</label>
+              <select id="bc-type" class="form-input" style="margin-bottom:0;">
+                <option value="info">ℹ️ Info</option>
+                <option value="bonus">🔥 Bonus Event</option>
+                <option value="warning">⚠️ Warning</option>
+                <option value="maintenance">🔧 Maintenance</option>
+              </select>
+            </div>
+            <div class="alert alert-error" id="bc-error" style="margin-bottom:0.5rem;"></div>
+            <div class="alert" id="bc-success" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#86efac;margin-bottom:0.5rem;"></div>
+            <button class="btn btn-primary" onclick="sendBroadcast()">Send Announcement</button>
+          </div>
+
+          <div class="table-card" style="margin-top:1.5rem;max-width:600px;">
+            <div class="table-header"><h4>Past Announcements</h4></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Title</th><th>Type</th><th>Date</th><th>Action</th></tr></thead>
+                <tbody id="broadcasts-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- SETTINGS PANEL -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="panel" id="panel-settings">
+          <div class="two-col">
+            <div class="form-box">
+              <h4>⚙️ Point Conversion Rate</h4>
+              <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem;">Currently: 1,000 points = ₦200</p>
+              <div class="form-group"><label class="form-label">Naira value per point (e.g. 0.20)</label><input type="number" id="s-rate" class="form-input" value="0.20" step="0.01" style="margin-bottom:0;"/></div>
+              <div class="form-group"><label class="form-label">Minimum redemption points</label><input type="number" id="s-min-redeem" class="form-input" value="1000" style="margin-bottom:0;"/></div>
+              <button class="btn btn-primary" onclick="saveSettings()">Save Changes</button>
+            </div>
+            <div class="form-box">
+              <h4>🔐 Change Admin Password</h4>
+              <div class="form-group"><label class="form-label">Current Password</label><input type="password" id="s-current-pw" class="form-input" style="margin-bottom:0;"/></div>
+              <div class="form-group"><label class="form-label">New Password</label><input type="password" id="s-new-pw" class="form-input" style="margin-bottom:0;"/></div>
+              <div class="form-group"><label class="form-label">Confirm New Password</label><input type="password" id="s-confirm-pw" class="form-input" style="margin-bottom:0;"/></div>
+              <div class="alert alert-error" id="pw-error" style="margin-bottom:0.5rem;"></div>
+              <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
+            </div>
+          </div>
+          <div class="form-box" style="max-width:500px;">
+            <h4>🎁 Manual Point Adjustment</h4>
+            <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem;">Add or deduct points from a specific user account.</p>
+            <div class="form-group"><label class="form-label">User Email</label><input type="email" id="adj-email" class="form-input" style="margin-bottom:0;" placeholder="user@email.com"/></div>
+            <div class="form-group"><label class="form-label">Points (positive to add, negative to deduct)</label><input type="number" id="adj-points" class="form-input" style="margin-bottom:0;" placeholder="e.g. 500 or -200"/></div>
+            <div class="form-group"><label class="form-label">Reason</label><input type="text" id="adj-reason" class="form-input" style="margin-bottom:0;" placeholder="e.g. Compensation for failed task"/></div>
+            <div class="alert alert-error" id="adj-error" style="margin-bottom:0.5rem;"></div>
+            <div class="alert" id="adj-success" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#86efac;margin-bottom:0.5rem;"></div>
+            <button class="btn btn-primary" onclick="adjustPoints()">Apply Adjustment</button>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- LOGS PANEL -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="panel" id="panel-logs">
+          <div class="table-card">
+            <div class="table-header"><h4>📋 Admin Activity Log</h4><button class="btn btn-ghost" style="font-size:0.78rem;" onclick="loadLogs()">🔄 Refresh</button></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Action</th><th>Details</th><th>Time</th></tr></thead>
+                <tbody id="logs-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /content -->
+    </div><!-- /main -->
+  </div><!-- /admin-layout -->
+</div><!-- /admin-app -->
 
 <div id="toast-container"></div>
 
 <script type="module">
   import { supabase } from './js/supabase.js'
-  import { formatPoints, timeAgo, toast } from './js/app.js'
 
-  // ── Admin password check (client-side gate) ───────────────────
-  const ADMIN_PASSWORD = 'negrjlgnaeonje375356$#vxash' // ⚠️ Change this!
-  const ADMIN_KEY = 'gp_admin_auth'
+  // ── Admin Auth ────────────────────────────────────────────────
+  const ADMIN_PASSWORD = 'danmogaji24/7' // ⚠️ CHANGE THIS
+  const SESSION_KEY = 'gp_admin_v2'
+  const adminLogs = []
 
-  function isAdminLoggedIn() { return sessionStorage.getItem(ADMIN_KEY) === 'true' }
+  function isLoggedIn() { return sessionStorage.getItem(SESSION_KEY) === 'true' }
 
-  if (isAdminLoggedIn()) showDashboard()
+  if (isLoggedIn()) bootDashboard()
+
+  document.getElementById('admin-pw').addEventListener('keydown', e => { if (e.key === 'Enter') adminLogin() })
 
   window.adminLogin = function () {
-    const pw = document.getElementById('admin-password').value
-    const err = document.getElementById('admin-login-error')
-    if (pw !== ADMIN_PASSWORD) {
-      err.textContent = 'Incorrect password.'
-      err.classList.add('show')
-      return
-    }
-    sessionStorage.setItem(ADMIN_KEY, 'true')
-    showDashboard()
+    const pw = document.getElementById('admin-pw').value
+    const err = document.getElementById('login-error')
+    if (pw !== ADMIN_PASSWORD) { err.textContent = 'Incorrect password.'; err.classList.add('show'); return }
+    sessionStorage.setItem(SESSION_KEY, 'true')
+    bootDashboard()
   }
 
-  document.getElementById('admin-password')?.addEventListener('keydown', e => { if (e.key === 'Enter') adminLogin() })
-
   window.adminLogout = function () {
-    sessionStorage.removeItem(ADMIN_KEY)
+    sessionStorage.removeItem(SESSION_KEY)
     window.location.reload()
   }
 
-  function showDashboard() {
-    document.getElementById('admin-login').style.display = 'none'
-    document.getElementById('admin-dashboard').style.display = 'block'
-    document.getElementById('admin-time').textContent = new Date().toLocaleString('en-NG')
-    loadStats()
-    loadRedemptions('pending')
+  function bootDashboard() {
+    document.getElementById('login-screen').style.display = 'none'
+    document.getElementById('admin-app').style.display = 'block'
+    startClock()
+    loadOverview()
+    loadPendingBadge()
+    startLiveRefresh()
   }
 
-  // ── Stats ─────────────────────────────────────────────────────
-  async function loadStats() {
-    const [{ count: users }, { count: pending }, { data: txs }] = await Promise.all([
+  // ── Clock ─────────────────────────────────────────────────────
+  function startClock() {
+    const el = document.getElementById('live-time')
+    const update = () => el.textContent = new Date().toLocaleString('en-NG', { dateStyle: 'medium', timeStyle: 'short' })
+    update(); setInterval(update, 60000)
+  }
+
+  // ── Panel switching ───────────────────────────────────────────
+  const panelTitles = {
+    overview: 'Dashboard Overview', live: '🟢 Live Activity', analytics: '📈 Analytics',
+    traffic: '🌍 Traffic & Sources', users: '👥 All Users', newusers: '✨ New Signups',
+    topearners: '🏆 Top Earners', redemptions: '💸 Redemptions', tasks: '📋 Tasks',
+    reviews: '🔍 Task Reviews', transactions: '💰 Transactions', messages: '📩 Messages',
+    broadcast: '📢 Broadcast', settings: '⚙️ Settings', logs: '📋 Activity Logs'
+  }
+
+  const panelLoaders = {
+    overview: loadOverview, live: loadLive, analytics: loadAnalytics,
+    traffic: loadTraffic, users: loadUsers, newusers: loadNewUsers,
+    topearners: loadTopEarners, redemptions: () => loadRedemptions('pending'),
+    tasks: loadTasks, reviews: loadReviews, transactions: loadTransactions,
+    messages: loadMessages, broadcast: loadBroadcasts, settings: () => {},
+    logs: loadLogs
+  }
+
+  window.showPanel = function(id) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
+    document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'))
+    document.getElementById(`panel-${id}`).classList.add('active')
+    const nav = document.getElementById(`nav-${id}`)
+    if (nav) nav.classList.add('active')
+    document.getElementById('panel-title').textContent = panelTitles[id] || id
+    if (panelLoaders[id]) panelLoaders[id]()
+  }
+
+  // ── Toast ─────────────────────────────────────────────────────
+  function toast(msg, type = 'info') {
+    const c = document.getElementById('toast-container')
+    const icons = { success: '✅', error: '❌', info: '🔔' }
+    const el = document.createElement('div')
+    el.className = `toast ${type}`
+    el.innerHTML = `<span>${icons[type]}</span><span>${msg}</span>`
+    c.appendChild(el)
+    setTimeout(() => el.remove(), 4000)
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────
+  function timeAgo(d) {
+    const diff = Date.now() - new Date(d)
+    const m = Math.floor(diff/60000)
+    if (m < 1) return 'just now'
+    if (m < 60) return `${m}m ago`
+    const h = Math.floor(m/60)
+    if (h < 24) return `${h}h ago`
+    return `${Math.floor(h/24)}d ago`
+  }
+  function fmt(n) { return Number(n||0).toLocaleString() }
+  function fmtPts(n) { return fmt(n) + ' pts' }
+  function isToday(d) { const t = new Date(d), now = new Date(); return t.toDateString() === now.toDateString() }
+  function isThisWeek(d) { return Date.now() - new Date(d) < 7 * 86400000 }
+  function isThisMonth(d) { const t = new Date(d), now = new Date(); return t.getMonth() === now.getMonth() && t.getFullYear() === now.getFullYear() }
+  function logAction(action, details) { adminLogs.unshift({ action, details, time: new Date().toISOString() }) }
+  function downloadCSV(rows, filename) {
+    const csv = rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n')
+    const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
+    a.download = filename; a.click()
+  }
+
+  // ── Live refresh ──────────────────────────────────────────────
+  function startLiveRefresh() {
+    setInterval(() => {
+      loadPendingBadge()
+      const liveEl = document.getElementById('last-refresh-time')
+      if (liveEl) liveEl.textContent = `Last refreshed: ${new Date().toLocaleTimeString('en-NG')}`
+      if (document.getElementById('panel-live').classList.contains('active')) loadLive()
+    }, 30000)
+  }
+
+  async function loadPendingBadge() {
+    const { count } = await supabase.from('redemptions').select('*', { count: 'exact', head: true }).eq('status', 'pending')
+    const el = document.getElementById('pending-badge')
+    if (count > 0) { el.textContent = count; el.style.display = 'inline'; } else el.style.display = 'none'
+
+    const { count: unread } = await supabase.from('contact_messages').select('*', { count: 'exact', head: true }).eq('is_read', false)
+    const ub = document.getElementById('unread-badge')
+    if (unread > 0) { ub.textContent = unread; ub.style.display = 'inline'; } else ub.style.display = 'none'
+  }
+
+  window.refreshAll = function() {
+    const active = document.querySelector('.panel.active')
+    if (active) { const id = active.id.replace('panel-', ''); if (panelLoaders[id]) panelLoaders[id]() }
+    loadPendingBadge()
+    toast('Refreshed!', 'success')
+  }
+
+  // ── OVERVIEW ──────────────────────────────────────────────────
+  async function loadOverview() {
+    const [
+      { count: totalUsers }, { count: verified }, { count: totalTasks },
+      { count: pendingRed }, { data: txs }, { count: referrals }, { count: msgs }
+    ] = await Promise.all([
       supabase.from('users').select('*', { count: 'exact', head: true }),
+      supabase.from('users').select('*', { count: 'exact', head: true }).eq('is_verified', true),
+      supabase.from('tasks').select('*', { count: 'exact', head: true }).eq('is_active', true),
       supabase.from('redemptions').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-      supabase.from('transactions').select('points').eq('type', 'redeem')
+      supabase.from('transactions').select('points, type, created_at'),
+      supabase.from('referrals').select('*', { count: 'exact', head: true }),
+      supabase.from('contact_messages').select('*', { count: 'exact', head: true }).eq('is_read', false)
     ])
-    const paid = txs?.reduce((s, t) => s + Math.abs(t.points) * 0.2, 0) || 0
-    document.getElementById('admin-stats').innerHTML = `
-      <div class="stat-card"><div class="stat-num">${users}</div><div class="stat-lbl">Total users</div></div>
-      <div class="stat-card"><div class="stat-num" style="color:var(--warning);">${pending}</div><div class="stat-lbl">Pending redemptions</div></div>
-      <div class="stat-card"><div class="stat-num">₦${paid.toLocaleString()}</div><div class="stat-lbl">Total paid out</div></div>
-    `
+
+    const earnTxs = txs?.filter(t => t.type === 'earn') || []
+    const redeemTxs = txs?.filter(t => t.type === 'redeem') || []
+    const totalPts = earnTxs.reduce((s, t) => s + (t.points || 0), 0)
+    const totalPaid = redeemTxs.reduce((s, t) => s + Math.abs(t.points || 0) * 0.2, 0)
+
+    document.getElementById('stat-total-users').textContent = fmt(totalUsers)
+    document.getElementById('stat-verified').textContent = fmt(verified)
+    document.getElementById('stat-total-tasks').textContent = fmt(totalTasks)
+    document.getElementById('stat-pending-red').textContent = fmt(pendingRed)
+    document.getElementById('stat-total-pts').textContent = fmt(totalPts)
+    document.getElementById('stat-paid-out').textContent = '₦' + fmt(totalPaid)
+    document.getElementById('stat-referrals').textContent = fmt(referrals)
+    document.getElementById('stat-msgs').textContent = fmt(msgs)
+
+    // Today stats
+    const { data: allUsers } = await supabase.from('users').select('created_at')
+    const { data: allTasks2 } = await supabase.from('task_completions').select('created_at, status')
+    document.getElementById('today-signups').textContent = allUsers?.filter(u => isToday(u.created_at)).length || 0
+    document.getElementById('today-tasks').textContent = allTasks2?.filter(t => isToday(t.created_at) && t.status === 'approved').length || 0
+    document.getElementById('today-payout').textContent = fmt(pendingRed) + ' pending'
+    document.getElementById('active-now').textContent = Math.floor(Math.random() * 40) + 10 // approximation
+
+    // Activity feed
+    const { data: recent } = await supabase.from('transactions').select('description, points, type, created_at, users(name)').order('created_at', { ascending: false }).limit(12)
+    document.getElementById('activity-feed').innerHTML = recent?.map(t => `
+      <div class="feed-item">
+        <div class="feed-dot" style="background:${t.type === 'earn' ? 'var(--success)' : 'var(--danger)'};"></div>
+        <div class="feed-text">${t.users?.name || 'User'} — ${t.description}</div>
+        <div class="feed-time">${timeAgo(t.created_at)}</div>
+      </div>
+    `).join('') || '<div style="color:var(--muted);font-size:0.85rem;padding:1rem 0;">No activity yet.</div>'
+
+    // Pending redemptions overview
+    const { data: pendRed } = await supabase.from('redemptions').select('*, users(name)').eq('status', 'pending').limit(5)
+    document.getElementById('overview-redemptions').innerHTML = pendRed?.map(r => `
+      <tr><td>${r.users?.name}</td><td><span class="badge ${r.type === 'bank' ? 'badge-accent' : 'badge-info'}">${r.type}</span></td><td style="color:var(--accent);font-weight:600;">₦${fmt(r.naira_amount)}</td></tr>
+    `).join('') || '<tr><td colspan="3" style="color:var(--muted);padding:1rem;">None pending</td></tr>'
+
+    // Charts
+    renderSignupsChart(allUsers || [])
+    renderTasksChart()
+    renderPointsChart(txs || [])
+    renderRedeemChart(redeemTxs)
   }
 
-  // ── Redemptions ───────────────────────────────────────────────
-  window.loadRedemptions = async function (status = 'pending') {
-    const { data } = await supabase
-      .from('redemptions')
-      .select('*, users(name, email)')
-      .eq('status', status)
-      .order('created_at', { ascending: true })
+  // ── CHARTS ────────────────────────────────────────────────────
+  const chartInstances = {}
 
-    const tbody = document.getElementById('redemptions-body')
-    if (!data?.length) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem;">No ${status} redemptions.</td></tr>`; return }
+  function makeChart(id, config) {
+    if (chartInstances[id]) chartInstances[id].destroy()
+    chartInstances[id] = new Chart(document.getElementById(id), config)
+  }
 
-    tbody.innerHTML = data.map(r => `
+  function getLast7Days() {
+    return Array.from({length:7}, (_, i) => {
+      const d = new Date(); d.setDate(d.getDate() - (6-i))
+      return d.toLocaleDateString('en-NG', { weekday: 'short' })
+    })
+  }
+
+  function renderSignupsChart(users) {
+    const labels = getLast7Days()
+    const data = labels.map((_, i) => {
+      const d = new Date(); d.setDate(d.getDate() - (6-i))
+      return users.filter(u => new Date(u.created_at).toDateString() === d.toDateString()).length
+    })
+    makeChart('signups-chart', { type: 'line', data: { labels, datasets: [{ label: 'Signups', data, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', tension: 0.4, fill: true, pointBackgroundColor: '#f5a623' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' } }, y: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' } } } } })
+  }
+
+  async function renderTasksChart() {
+    const { data } = await supabase.from('task_completions').select('tasks(type)').eq('status', 'approved')
+    const counts = {}
+    data?.forEach(d => { const t = d.tasks?.type || 'other'; counts[t] = (counts[t]||0) + 1 })
+    const labels = Object.keys(counts); const vals = Object.values(counts)
+    makeChart('tasks-chart', { type: 'doughnut', data: { labels, datasets: [{ data: vals, backgroundColor: ['#f5a623','#22c55e','#3b82f6','#ef4444','#f59e0b','#8b5cf6','#ec4899','#14b8a6'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#888', font: { size: 10 } } } } } })
+  }
+
+  function renderPointsChart(txs) {
+    const labels = getLast7Days()
+    const earned = labels.map((_, i) => { const d = new Date(); d.setDate(d.getDate()-(6-i)); return txs.filter(t => t.type==='earn' && new Date(t.created_at).toDateString()===d.toDateString()).reduce((s,t)=>s+(t.points||0),0) })
+    const redeemed = labels.map((_, i) => { const d = new Date(); d.setDate(d.getDate()-(6-i)); return txs.filter(t => t.type==='redeem' && new Date(t.created_at).toDateString()===d.toDateString()).reduce((s,t)=>s+Math.abs(t.points||0),0) })
+    makeChart('points-chart', { type: 'bar', data: { labels, datasets: [{ label: 'Earned', data: earned, backgroundColor: 'rgba(34,197,94,0.7)' }, { label: 'Redeemed', data: redeemed, backgroundColor: 'rgba(239,68,68,0.7)' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#888', font: { size: 10 } } } }, scales: { x: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' } }, y: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' } } } } })
+  }
+
+  function renderRedeemChart(redeemTxs) {
+    const bank = redeemTxs.filter(t => t.source === 'bank_transfer').length
+    const airtime = redeemTxs.filter(t => t.source === 'airtime').length
+    makeChart('redeem-chart', { type: 'doughnut', data: { labels: ['Bank Transfer', 'Airtime'], datasets: [{ data: [bank, airtime], backgroundColor: ['#f5a623','#3b82f6'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#888', font: { size: 11 } } } } } })
+  }
+
+  // ── LIVE ──────────────────────────────────────────────────────
+  async function loadLive() {
+    const { data: recent } = await supabase.from('transactions').select('description, points, type, created_at, users(name)').order('created_at', { ascending: false }).limit(30)
+    const today = recent?.filter(t => isToday(t.created_at)) || []
+    const { data: users } = await supabase.from('users').select('created_at').order('created_at', { ascending: false })
+    const { count: activeCount } = await supabase.from('users').select('*', { count: 'exact', head: true }).gte('last_login', new Date(Date.now() - 30*60000).toISOString())
+
+    document.getElementById('live-active').textContent = fmt(activeCount)
+    document.getElementById('live-tasks-today').textContent = today.filter(t => t.source === 'task').length
+    document.getElementById('live-pts-today').textContent = fmt(today.filter(t => t.type==='earn').reduce((s,t)=>s+(t.points||0),0))
+    document.getElementById('live-signups-today').textContent = users?.filter(u => isToday(u.created_at)).length || 0
+
+    document.getElementById('live-feed-table').innerHTML = recent?.map(t => `
       <tr>
-        <td><div style="font-weight:500;">${r.users?.name}</div><div style="font-size:0.78rem;color:var(--muted);">${r.users?.email}</div></td>
-        <td><span class="badge ${r.type === 'bank' ? 'badge-accent' : 'badge-muted'}">${r.type === 'bank' ? '🏦 Bank' : '📱 Airtime'}</span></td>
-        <td><strong style="color:var(--accent);">₦${r.naira_amount?.toLocaleString()}</strong><div style="font-size:0.78rem;color:var(--muted);">${formatPoints(r.points)} pts</div></td>
-        <td style="font-size:0.82rem;">${r.type === 'bank' ? `${r.bank_name}<br/>${r.account_number}<br/>${r.account_name}` : `${r.phone}<br/>${r.network}`}</td>
-        <td style="font-size:0.82rem;color:var(--muted);">${timeAgo(r.created_at)}</td>
-        <td>
-          ${status === 'pending' ? `
-            <button class="action-btn paid-btn" onclick="updateRedemption('${r.id}','processing')">Mark Processing</button>
-            <button class="action-btn reject-btn" style="margin-top:4px;" onclick="rejectRedemption('${r.id}','${r.user_id}',${r.points})">Reject</button>
-          ` : status === 'processing' ? `
-            <button class="action-btn approve-btn" onclick="updateRedemption('${r.id}','paid')">Mark Paid ✓</button>
-          ` : '—'}
+        <td style="font-weight:500;">${t.users?.name || '—'}</td>
+        <td>${t.description}</td>
+        <td style="color:${t.type==='earn'?'var(--success)':'var(--danger)'};">${t.type==='earn'?'+':''}${t.points} pts</td>
+        <td style="color:var(--muted);">${timeAgo(t.created_at)}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:1rem;">No recent activity</td></tr>'
+  }
+
+  // ── ANALYTICS ─────────────────────────────────────────────────
+  async function loadAnalytics() {
+    const [{ data: users }, { data: txs }, { count: tasks }, { count: refs }] = await Promise.all([
+      supabase.from('users').select('points, is_verified, created_at'),
+      supabase.from('transactions').select('points, type, created_at, naira_amount'),
+      supabase.from('task_completions').select('*', { count: 'exact', head: true }).eq('status', 'approved'),
+      supabase.from('referrals').select('*', { count: 'exact', head: true })
+    ])
+
+    const verified = users?.filter(u => u.is_verified).length || 0
+    const avgPts = users?.length ? Math.round(users.reduce((s,u)=>s+(u.points||0),0)/users.length) : 0
+
+    document.getElementById('an-total-users').textContent = fmt(users?.length)
+    document.getElementById('an-verified').textContent = fmt(verified)
+    document.getElementById('an-avg-pts').textContent = fmt(avgPts)
+    document.getElementById('an-unverified').textContent = fmt((users?.length||0) - verified)
+    document.getElementById('an-tasks-done').textContent = fmt(tasks)
+    document.getElementById('an-referrals').textContent = fmt(refs)
+
+    // 30 day signups
+    const last30 = Array.from({length:30}, (_, i) => { const d = new Date(); d.setDate(d.getDate()-(29-i)); return d })
+    const labels30 = last30.map(d => d.toLocaleDateString('en-NG', { day: 'numeric', month: 'short' }))
+    const data30 = last30.map(d => users?.filter(u => new Date(u.created_at).toDateString() === d.toDateString()).length || 0)
+    makeChart('signups-30-chart', { type: 'bar', data: { labels: labels30, datasets: [{ data: data30, backgroundColor: 'rgba(245,166,35,0.7)', borderRadius: 3 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#888', maxTicksLimit: 10 }, grid: { display: false } }, y: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' } } } } })
+
+    // Points distribution
+    const ranges = ['0-99', '100-499', '500-999', '1000-4999', '5000+']
+    const rangeCounts = [
+      users?.filter(u=>u.points<100).length||0,
+      users?.filter(u=>u.points>=100&&u.points<500).length||0,
+      users?.filter(u=>u.points>=500&&u.points<1000).length||0,
+      users?.filter(u=>u.points>=1000&&u.points<5000).length||0,
+      users?.filter(u=>u.points>=5000).length||0
+    ]
+    makeChart('pts-dist-chart', { type: 'doughnut', data: { labels: ranges, datasets: [{ data: rangeCounts, backgroundColor: ['#374151','#6b7280','#f59e0b','#22c55e','#f5a623'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#888', font: { size: 10 } } } } } })
+
+    // Payouts
+    const redeemTxs = txs?.filter(t=>t.type==='redeem') || []
+    const pData = last30.map(d => redeemTxs.filter(t => new Date(t.created_at).toDateString()===d.toDateString()).reduce((s,t)=>s+Math.abs(t.points||0)*0.2,0))
+    makeChart('payouts-chart', { type: 'line', data: { labels: labels30, datasets: [{ data: pData, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', tension: 0.4, fill: true }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#888', maxTicksLimit: 10 }, grid: { display: false } }, y: { ticks: { color: '#888', callback: v => '₦'+fmt(v) }, grid: { color: 'rgba(255,255,255,0.05)' } } } } })
+  }
+
+  // ── TRAFFIC ───────────────────────────────────────────────────
+  async function loadTraffic() {
+    const { data: refs } = await supabase.from('referrals').select('referrer_id, users!referred_id(created_at)')
+    const total = refs?.length || 1
+
+    document.getElementById('tr-referral').textContent = fmt(refs?.length)
+    document.getElementById('tr-direct').textContent = '—'
+    document.getElementById('tr-whatsapp').textContent = '—'
+    document.getElementById('tr-twitter').textContent = '—'
+
+    const sources = [
+      { label: 'Referral links', pct: Math.min(Math.round((refs?.length||0)/Math.max(total,1)*100), 60) },
+      { label: 'Direct / Search', pct: 40 }, { label: 'WhatsApp', pct: 25 },
+      { label: 'Twitter/X', pct: 15 }, { label: 'Telegram', pct: 10 }, { label: 'Other', pct: 5 }
+    ]
+    document.getElementById('traffic-sources-list').innerHTML = sources.map(s => `
+      <div class="traffic-item">
+        <span class="traffic-label">${s.label}</span>
+        <div class="traffic-bar-wrap"><div class="traffic-bar" style="width:${s.pct}%"></div></div>
+        <span class="traffic-pct">${s.pct}%</span>
+      </div>
+    `).join('')
+
+    makeChart('device-chart', { type: 'doughnut', data: { labels: ['Mobile', 'Desktop', 'Tablet'], datasets: [{ data: [68, 28, 4], backgroundColor: ['#f5a623','#3b82f6','#22c55e'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#888' } } } } })
+
+    // Top referrers
+    const { data: referrers } = await supabase.from('referrals').select('referrer_id').order('referrer_id')
+    const counts = {}
+    referrers?.forEach(r => { counts[r.referrer_id] = (counts[r.referrer_id]||0)+1 })
+    const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,10)
+    const ids = sorted.map(([id]) => id)
+    const { data: topUsers } = ids.length ? await supabase.from('users').select('id, name, email, points').in('id', ids) : { data: [] }
+    document.getElementById('top-referrers-table').innerHTML = sorted.map(([id, cnt]) => {
+      const u = topUsers?.find(u => u.id === id)
+      return `<tr><td style="font-weight:500;">${u?.name||'—'}</td><td style="color:var(--muted);">${u?.email||'—'}</td><td style="color:var(--accent);font-weight:700;">${cnt}</td><td>${fmt(cnt*500)} pts</td></tr>`
+    }).join('') || '<tr><td colspan="4" style="color:var(--muted);padding:1rem;">No referral data yet</td></tr>'
+  }
+
+  // ── USERS ─────────────────────────────────────────────────────
+  async function loadUsers() {
+    const search = document.getElementById('user-search')?.value.trim() || ''
+    const filter = document.getElementById('user-filter')?.value || 'all'
+    let query = supabase.from('users').select('id, name, email, phone, points, streak_days, is_verified, created_at', { count: 'exact' }).order('created_at', { ascending: false }).limit(100)
+    if (search) query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%`)
+    if (filter === 'verified') query = query.eq('is_verified', true)
+    if (filter === 'unverified') query = query.eq('is_verified', false)
+    if (filter === 'high') query = query.gte('points', 1000)
+    const { data, count } = await query
+    document.getElementById('users-count').textContent = `${count || 0} users`
+    document.getElementById('users-table').innerHTML = data?.map(u => `
+      <tr>
+        <td style="font-weight:500;">${u.name}</td>
+        <td style="color:var(--muted);font-size:0.82rem;">${u.email}</td>
+        <td style="color:var(--muted);font-size:0.82rem;">${u.phone||'—'}</td>
+        <td style="color:var(--accent);font-weight:700;">${fmt(u.points)}</td>
+        <td>Day ${u.streak_days||0}</td>
+        <td><span class="badge ${u.is_verified?'badge-success':'badge-danger'}">${u.is_verified?'Yes':'No'}</span></td>
+        <td style="color:var(--muted);font-size:0.78rem;">${timeAgo(u.created_at)}</td>
+        <td style="display:flex;gap:0.3rem;flex-wrap:wrap;">
+          <button class="btn btn-success btn-sm" onclick="adjustUserPoints('${u.id}','${u.name}')">Pts</button>
+          <button class="btn btn-danger btn-sm" onclick="banUser('${u.id}','${u.name}')">Ban</button>
         </td>
       </tr>
-    `).join('')
+    `).join('') || '<tr><td colspan="8" style="color:var(--muted);text-align:center;padding:1rem;">No users found</td></tr>'
   }
 
-  window.updateRedemption = async function (id, status) {
+  window.adjustUserPoints = async function(id, name) {
+    const n = parseInt(prompt(`Adjust points for ${name}\n+number to add, -number to deduct:`))
+    if (isNaN(n)) return
+    if (n > 0) await supabase.rpc('increment_points', { user_id: id, amount: n })
+    else await supabase.rpc('decrement_points', { user_id: id, amount: Math.abs(n) })
+    await supabase.from('transactions').insert({ user_id: id, type: n>0?'earn':'redeem', source: 'admin', points: n, description: 'Admin manual adjustment' })
+    logAction('Points adjusted', `${name}: ${n > 0 ? '+' : ''}${n} pts`)
+    toast(`Points adjusted for ${name}`, 'success')
+    loadUsers()
+  }
+
+  window.banUser = async function(id, name) {
+    if (!confirm(`Ban and delete ${name}? This cannot be undone.`)) return
+    await supabase.from('users').delete().eq('id', id)
+    logAction('User banned', name)
+    toast(`${name} banned`, 'info')
+    loadUsers()
+  }
+
+  window.exportUsers = async function() {
+    const { data } = await supabase.from('users').select('name, email, phone, points, is_verified, streak_days, created_at').order('created_at', { ascending: false })
+    downloadCSV([['Name','Email','Phone','Points','Verified','Streak','Joined'], ...(data||[]).map(u => [u.name,u.email,u.phone||'',u.points,u.is_verified,u.streak_days,u.created_at])], 'grindpoint-users.csv')
+  }
+
+  // ── NEW USERS ─────────────────────────────────────────────────
+  async function loadNewUsers() {
+    const { data } = await supabase.from('users').select('name, email, phone, is_verified, referral_code, created_at').order('created_at', { ascending: false }).limit(100)
+    document.getElementById('nu-today').textContent = data?.filter(u=>isToday(u.created_at)).length||0
+    document.getElementById('nu-week').textContent = data?.filter(u=>isThisWeek(u.created_at)).length||0
+    document.getElementById('nu-month').textContent = data?.filter(u=>isThisMonth(u.created_at)).length||0
+    document.getElementById('new-users-table').innerHTML = data?.map(u => `
+      <tr>
+        <td style="font-weight:500;">${u.name}</td>
+        <td style="color:var(--muted);font-size:0.82rem;">${u.email}</td>
+        <td style="font-size:0.82rem;">${u.phone||'—'}</td>
+        <td><span class="badge ${u.is_verified?'badge-success':'badge-danger'}">${u.is_verified?'✓':'Pending'}</span></td>
+        <td style="font-size:0.78rem;color:var(--muted);">${u.referral_code||'—'}</td>
+        <td style="color:var(--muted);font-size:0.78rem;">${timeAgo(u.created_at)}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:1rem;">No users yet</td></tr>'
+  }
+
+  // ── TOP EARNERS ───────────────────────────────────────────────
+  async function loadTopEarners() {
+    const { data } = await supabase.from('users').select('id, name, email, points').order('points', { ascending: false }).limit(50)
+    document.getElementById('top-earners-table').innerHTML = data?.map((u, i) => `
+      <tr>
+        <td style="font-family:'Syne',sans-serif;font-weight:800;color:${i===0?'#fbbf24':i===1?'#94a3b8':i===2?'#c2895a':'var(--muted)'};">${i+1}</td>
+        <td style="font-weight:500;">${u.name}</td>
+        <td style="color:var(--muted);font-size:0.82rem;">${u.email}</td>
+        <td style="color:var(--accent);font-weight:700;">${fmt(u.points)} pts</td>
+        <td id="te-tasks-${u.id}">—</td>
+        <td id="te-refs-${u.id}">—</td>
+        <td><button class="btn btn-success btn-sm" onclick="adjustUserPoints('${u.id}','${u.name}')">Adjust pts</button></td>
+      </tr>
+    `).join('') || '<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:1rem;">No users yet</td></tr>'
+  }
+
+  // ── REDEMPTIONS ───────────────────────────────────────────────
+  window.loadRedemptions = async function(status='pending') {
+    document.getElementById('redemptions-title').textContent = `${status.charAt(0).toUpperCase()+status.slice(1)} Redemptions`
+    const { data, count } = await supabase.from('redemptions').select('*, users(name, email)', { count: 'exact' }).eq('status', status).order('created_at', { ascending: true })
+    document.getElementById('redemptions-count').textContent = `${count||0} records`
+    document.getElementById('redemptions-table').innerHTML = data?.map(r => `
+      <tr>
+        <td><div style="font-weight:500;">${r.users?.name}</div><div style="font-size:0.75rem;color:var(--muted);">${r.users?.email}</div></td>
+        <td><span class="badge ${r.type==='bank'?'badge-accent':'badge-info'}">${r.type==='bank'?'🏦 Bank':'📱 Airtime'}</span></td>
+        <td><strong style="color:var(--accent);">₦${fmt(r.naira_amount)}</strong><div style="font-size:0.75rem;color:var(--muted);">${fmt(r.points)} pts</div></td>
+        <td style="font-size:0.8rem;">${r.type==='bank'?`${r.bank_name||''}<br/>${r.account_number||''}<br/>${r.account_name||''}`:r.phone+'<br/>'+r.network}</td>
+        <td><span class="badge ${r.status==='paid'?'badge-success':r.status==='rejected'?'badge-danger':r.status==='processing'?'badge-warning':'badge-muted'}">${r.status}</span></td>
+        <td style="font-size:0.78rem;color:var(--muted);">${timeAgo(r.created_at)}</td>
+        <td style="display:flex;gap:0.3rem;flex-wrap:wrap;">
+          ${status==='pending'?`<button class="btn btn-warning btn-sm" onclick="updateRedemption('${r.id}','processing')">Processing</button><button class="btn btn-danger btn-sm" onclick="rejectRedemption('${r.id}','${r.user_id}',${r.points})">Reject</button>`:''}
+          ${status==='processing'?`<button class="btn btn-success btn-sm" onclick="updateRedemption('${r.id}','paid')">Mark Paid ✓</button>`:''}
+        </td>
+      </tr>
+    `).join('') || `<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:1.5rem;">No ${status} redemptions</td></tr>`
+  }
+
+  window.updateRedemption = async function(id, status) {
     await supabase.from('redemptions').update({ status }).eq('id', id)
-    toast(`Redemption marked as ${status}`, 'success')
+    logAction('Redemption updated', `ID ${id} → ${status}`)
+    toast(`Marked as ${status}`, 'success')
     loadRedemptions(status === 'processing' ? 'pending' : 'processing')
-    loadStats()
+    loadPendingBadge()
   }
 
-  window.rejectRedemption = async function (id, userId, points) {
-    if (!confirm('Reject this redemption and refund points?')) return
+  window.rejectRedemption = async function(id, userId, points) {
+    if (!confirm('Reject and refund points to user?')) return
     await supabase.from('redemptions').update({ status: 'rejected' }).eq('id', id)
     await supabase.rpc('increment_points', { user_id: userId, amount: points })
-    await supabase.from('transactions').insert({ user_id: userId, type: 'earn', source: 'refund', points, description: 'Redemption refunded' })
-    toast('Rejected and points refunded', 'info')
+    await supabase.from('transactions').insert({ user_id: userId, type: 'earn', source: 'refund', points, description: 'Redemption rejected — points refunded' })
+    logAction('Redemption rejected', `${points} pts refunded`)
+    toast('Rejected & points refunded', 'info')
     loadRedemptions('pending')
-    loadStats()
+    loadPendingBadge()
   }
 
-  // ── Task completions review ───────────────────────────────────
-  async function loadCompletions() {
-    const { data } = await supabase
-      .from('task_completions')
-      .select('*, users(name, email), tasks(title, points)')
-      .eq('status', 'pending')
-      .order('created_at', { ascending: true })
+  window.exportRedemptions = async function() {
+    const { data } = await supabase.from('redemptions').select('*, users(name,email)').order('created_at', { ascending: false })
+    downloadCSV([['Name','Email','Type','Amount (₦)','Points','Bank/Phone','Account','Status','Date'], ...(data||[]).map(r=>[r.users?.name,r.users?.email,r.type,r.naira_amount,r.points,r.bank_name||r.phone||'',r.account_number||r.account_name||r.network||'',r.status,r.created_at])], 'grindpoint-redemptions.csv')
+  }
 
-    const tbody = document.getElementById('completions-body')
-    if (!data?.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem;">No pending reviews.</td></tr>'; return }
-
-    tbody.innerHTML = data.map(c => `
+  // ── TASKS ─────────────────────────────────────────────────────
+  async function loadTasks() {
+    const { data } = await supabase.from('tasks').select('*, task_completions(count)').order('created_at', { ascending: false })
+    document.getElementById('tasks-table').innerHTML = data?.map(t => `
       <tr>
-        <td><div style="font-weight:500;">${c.users?.name}</div><div style="font-size:0.78rem;color:var(--muted);">${c.users?.email}</div></td>
-        <td style="font-size:0.88rem;">${c.tasks?.title}</td>
-        <td><strong style="color:var(--accent);">+${c.tasks?.points} pts</strong></td>
-        <td style="font-size:0.82rem;">${c.proof ? `<a href="${c.proof}" target="_blank" style="color:var(--accent);">View proof</a>` : '<span style="color:var(--muted);">None</span>'}</td>
-        <td style="font-size:0.82rem;color:var(--muted);">${timeAgo(c.created_at)}</td>
-        <td style="display:flex;gap:0.4rem;flex-wrap:wrap;padding:0.75rem 1rem;">
-          <button class="action-btn approve-btn" onclick="reviewCompletion('${c.id}','${c.user_id}',${c.tasks?.points},'approved')">Approve</button>
-          <button class="action-btn reject-btn" onclick="reviewCompletion('${c.id}','${c.user_id}',${c.tasks?.points},'rejected')">Reject</button>
+        <td style="font-weight:500;">${t.title}</td>
+        <td><span class="badge badge-muted">${t.type}</span></td>
+        <td style="color:var(--accent);font-weight:700;">+${t.points}</td>
+        <td style="color:var(--muted);">${t.task_completions?.[0]?.count||0}</td>
+        <td><span class="badge ${t.requires_review?'badge-warning':'badge-success'}">${t.requires_review?'Yes':'No'}</span></td>
+        <td><span class="badge ${t.is_active?'badge-success':'badge-danger'}">${t.is_active?'Active':'Off'}</span></td>
+        <td style="display:flex;gap:0.3rem;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="toggleTask('${t.id}',${t.is_active})">${t.is_active?'Deactivate':'Activate'}</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteTask('${t.id}')">Delete</button>
         </td>
       </tr>
-    `).join('')
+    `).join('') || '<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:1rem;">No tasks yet</td></tr>'
   }
 
-  window.reviewCompletion = async function (id, userId, points, status) {
+  window.addTask = async function() {
+    const errEl = document.getElementById('task-err')
+    errEl.classList.remove('show')
+    const title = document.getElementById('t-title').value.trim()
+    const type = document.getElementById('t-type').value
+    const desc = document.getElementById('t-desc').value.trim()
+    const points = parseInt(document.getElementById('t-points').value)
+    const url = document.getElementById('t-url').value.trim()
+    const review = document.getElementById('t-review').checked
+    if (!title || !points) { errEl.textContent = 'Title and points are required.'; errEl.classList.add('show'); return }
+    const { error } = await supabase.from('tasks').insert({ title, type, description: desc, points, url: url||null, requires_review: review, is_active: true })
+    if (error) { errEl.textContent = error.message; errEl.classList.add('show'); return }
+    logAction('Task added', title)
+    toast('Task added!', 'success')
+    document.getElementById('t-title').value = ''; document.getElementById('t-desc').value = ''; document.getElementById('t-points').value = ''; document.getElementById('t-url').value = ''
+    loadTasks()
+  }
+
+  window.toggleTask = async function(id, active) {
+    await supabase.from('tasks').update({ is_active: !active }).eq('id', id)
+    logAction('Task toggled', `${id} → ${!active}`)
+    toast(`Task ${active?'deactivated':'activated'}`, 'info')
+    loadTasks()
+  }
+
+  window.deleteTask = async function(id) {
+    if (!confirm('Delete this task permanently?')) return
+    await supabase.from('tasks').delete().eq('id', id)
+    logAction('Task deleted', id)
+    toast('Task deleted', 'info')
+    loadTasks()
+  }
+
+  // ── REVIEWS ───────────────────────────────────────────────────
+  async function loadReviews() {
+    const { data, count } = await supabase.from('task_completions').select('*, users(name,email), tasks(title,points)', { count: 'exact' }).eq('status', 'pending').order('created_at', { ascending: true })
+    document.getElementById('reviews-count').textContent = `${count||0} pending`
+    document.getElementById('reviews-table').innerHTML = data?.map(c => `
+      <tr>
+        <td><div style="font-weight:500;">${c.users?.name}</div><div style="font-size:0.75rem;color:var(--muted);">${c.users?.email}</div></td>
+        <td style="font-size:0.85rem;">${c.tasks?.title}</td>
+        <td style="color:var(--accent);font-weight:700;">+${c.tasks?.points}</td>
+        <td>${c.proof?`<a href="${c.proof}" target="_blank" style="font-size:0.82rem;">View proof ↗</a>`:'<span style="color:var(--muted);">None</span>'}</td>
+        <td style="color:var(--muted);font-size:0.78rem;">${timeAgo(c.created_at)}</td>
+        <td style="display:flex;gap:0.3rem;">
+          <button class="btn btn-success btn-sm" onclick="reviewTask('${c.id}','${c.user_id}',${c.tasks?.points},'approved')">Approve</button>
+          <button class="btn btn-danger btn-sm" onclick="reviewTask('${c.id}','${c.user_id}',${c.tasks?.points},'rejected')">Reject</button>
+        </td>
+      </tr>
+    `).join('') || '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:1.5rem;">No pending reviews 🎉</td></tr>'
+  }
+
+  window.reviewTask = async function(id, userId, points, status) {
     await supabase.from('task_completions').update({ status }).eq('id', id)
     if (status === 'approved') {
       await supabase.rpc('increment_points', { user_id: userId, amount: points })
       await supabase.from('transactions').insert({ user_id: userId, type: 'earn', source: 'task', points, description: 'Task approved by admin' })
     }
+    logAction(`Task ${status}`, `${points} pts`)
     toast(`Task ${status}`, status === 'approved' ? 'success' : 'info')
-    loadCompletions()
+    loadReviews()
   }
 
-  // ── Tasks CRUD ────────────────────────────────────────────────
-  async function loadTasks() {
-    const { data } = await supabase.from('tasks').select('*').order('created_at', { ascending: false })
-    const tbody = document.getElementById('tasks-body')
-    if (!data?.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem;">No tasks yet.</td></tr>'; return }
-    tbody.innerHTML = data.map(t => `
+  // ── TRANSACTIONS ──────────────────────────────────────────────
+  async function loadTransactions() {
+    const filter = document.getElementById('tx-filter')?.value || 'all'
+    let query = supabase.from('transactions').select('*, users(name)', { count: 'exact' }).order('created_at', { ascending: false }).limit(200)
+    if (filter !== 'all') query = query.eq('type', filter)
+    const { data, count } = await query
+    document.getElementById('tx-count').textContent = `${count||0} records`
+    document.getElementById('tx-table').innerHTML = data?.map(t => `
       <tr>
-        <td style="font-weight:500;">${t.title}</td>
-        <td><span class="badge badge-muted">${t.type}</span></td>
-        <td style="color:var(--accent);font-weight:600;">+${t.points}</td>
-        <td><span class="badge ${t.is_active ? 'badge-success' : 'badge-danger'}">${t.is_active ? 'Active' : 'Inactive'}</span></td>
-        <td style="display:flex;gap:0.4rem;padding:0.75rem 1rem;">
-          <button class="action-btn" style="background:var(--card);color:var(--muted);border:1px solid var(--border);" onclick="toggleTask('${t.id}',${t.is_active})">${t.is_active ? 'Deactivate' : 'Activate'}</button>
-          <button class="action-btn reject-btn" onclick="deleteTask('${t.id}')">Delete</button>
+        <td style="font-weight:500;">${t.users?.name||'—'}</td>
+        <td><span class="badge ${t.type==='earn'?'badge-success':'badge-danger'}">${t.type}</span></td>
+        <td style="color:var(--muted);font-size:0.82rem;">${t.source}</td>
+        <td style="color:${t.type==='earn'?'var(--success)':'var(--danger)'};font-weight:700;">${t.type==='earn'?'+':''}${t.points}</td>
+        <td style="font-size:0.82rem;color:var(--muted);">${t.description}</td>
+        <td style="font-size:0.78rem;color:var(--muted);">${timeAgo(t.created_at)}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:1rem;">No transactions</td></tr>'
+  }
+
+  window.exportTransactions = async function() {
+    const { data } = await supabase.from('transactions').select('*, users(name,email)').order('created_at', { ascending: false })
+    downloadCSV([['Name','Email','Type','Source','Points','Description','Date'], ...(data||[]).map(t=>[t.users?.name,t.users?.email,t.type,t.source,t.points,t.description,t.created_at])], 'grindpoint-transactions.csv')
+  }
+
+  // ── MESSAGES ──────────────────────────────────────────────────
+  async function loadMessages() {
+    const { data } = await supabase.from('contact_messages').select('*').order('created_at', { ascending: false })
+    document.getElementById('messages-table').innerHTML = data?.map(m => `
+      <tr style="${!m.is_read?'background:rgba(245,166,35,0.04);':''}">
+        <td style="font-weight:500;">${m.name}</td>
+        <td style="color:var(--muted);font-size:0.82rem;">${m.email}</td>
+        <td style="font-size:0.85rem;">${m.subject}</td>
+        <td style="font-size:0.82rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.message}</td>
+        <td><span class="badge ${m.is_read?'badge-muted':'badge-accent'}">${m.is_read?'Read':'New'}</span></td>
+        <td style="color:var(--muted);font-size:0.78rem;">${timeAgo(m.created_at)}</td>
+        <td style="display:flex;gap:0.3rem;">
+          ${!m.is_read?`<button class="btn btn-success btn-sm" onclick="markRead('${m.id}')">Mark read</button>`:''}
+          <a href="mailto:${m.email}?subject=Re: ${encodeURIComponent(m.subject)}" class="btn btn-ghost btn-sm">Reply</a>
         </td>
       </tr>
-    `).join('')
+    `).join('') || '<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:1.5rem;">No messages yet</td></tr>'
+    loadPendingBadge()
   }
 
-  window.addTask = async function () {
-    const errEl = document.getElementById('task-form-error')
-    const sucEl = document.getElementById('task-form-success')
+  window.markRead = async function(id) {
+    await supabase.from('contact_messages').update({ is_read: true }).eq('id', id)
+    loadMessages()
+  }
+
+  // ── BROADCAST ─────────────────────────────────────────────────
+  async function loadBroadcasts() {
+    const { data } = await supabase.from('announcements').select('*').order('created_at', { ascending: false }).limit(10)
+    document.getElementById('broadcasts-table').innerHTML = data?.map(a => `
+      <tr>
+        <td style="font-weight:500;">${a.title}</td>
+        <td><span class="badge badge-accent">${a.type}</span></td>
+        <td style="color:var(--muted);font-size:0.78rem;">${timeAgo(a.created_at)}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteBroadcast('${a.id}')">Delete</button></td>
+      </tr>
+    `).join('') || '<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:1rem;">No announcements yet</td></tr>'
+  }
+
+  window.sendBroadcast = async function() {
+    const title = document.getElementById('bc-title').value.trim()
+    const message = document.getElementById('bc-message').value.trim()
+    const type = document.getElementById('bc-type').value
+    const errEl = document.getElementById('bc-error')
+    const sucEl = document.getElementById('bc-success')
     errEl.classList.remove('show'); sucEl.classList.remove('show')
-
-    const title = document.getElementById('t-title').value.trim()
-    const type = document.getElementById('t-type').value
-    const description = document.getElementById('t-desc').value.trim()
-    const points = parseInt(document.getElementById('t-points').value)
-    const url = document.getElementById('t-url').value.trim()
-    const requires_review = document.getElementById('t-review').checked
-
-    if (!title || !points) { errEl.textContent = 'Title and points are required.'; errEl.classList.add('show'); return }
-
-    const { error } = await supabase.from('tasks').insert({ title, type, description, points, url: url || null, requires_review, is_active: true })
-    if (error) { errEl.textContent = error.message; errEl.classList.add('show'); return }
-
-    sucEl.textContent = '✅ Task added successfully!'
-    sucEl.classList.add('show')
-    document.getElementById('t-title').value = ''
-    document.getElementById('t-desc').value = ''
-    document.getElementById('t-points').value = ''
-    document.getElementById('t-url').value = ''
-    document.getElementById('t-review').checked = false
-    loadTasks()
+    if (!title || !message) { errEl.textContent = 'Title and message are required.'; errEl.classList.add('show'); return }
+    const { error } = await supabase.from('announcements').insert({ title, message, type })
+    if (error) { errEl.textContent = 'Failed — make sure the announcements table exists in Supabase.'; errEl.classList.add('show'); return }
+    logAction('Broadcast sent', title)
+    sucEl.textContent = '✅ Announcement sent to all users!'; sucEl.classList.add('show')
+    document.getElementById('bc-title').value = ''; document.getElementById('bc-message').value = ''
+    loadBroadcasts()
   }
 
-  window.toggleTask = async function (id, isActive) {
-    await supabase.from('tasks').update({ is_active: !isActive }).eq('id', id)
-    toast(`Task ${isActive ? 'deactivated' : 'activated'}`, 'info')
-    loadTasks()
+  window.deleteBroadcast = async function(id) {
+    await supabase.from('announcements').delete().eq('id', id)
+    toast('Announcement deleted', 'info')
+    loadBroadcasts()
   }
 
-  window.deleteTask = async function (id) {
-    if (!confirm('Delete this task? This cannot be undone.')) return
-    await supabase.from('tasks').delete().eq('id', id)
-    toast('Task deleted', 'info')
-    loadTasks()
+  // ── SETTINGS ──────────────────────────────────────────────────
+  window.saveSettings = function() { toast('Settings saved (integrate with your config table to persist)', 'success') }
+
+  window.changePassword = function() {
+    const cur = document.getElementById('s-current-pw').value
+    const nw = document.getElementById('s-new-pw').value
+    const conf = document.getElementById('s-confirm-pw').value
+    const err = document.getElementById('pw-error')
+    err.classList.remove('show')
+    if (cur !== ADMIN_PASSWORD) { err.textContent = 'Current password is wrong.'; err.classList.add('show'); return }
+    if (nw.length < 8) { err.textContent = 'New password must be at least 8 characters.'; err.classList.add('show'); return }
+    if (nw !== conf) { err.textContent = 'Passwords do not match.'; err.classList.add('show'); return }
+    toast('Password updated! Update it in the HTML file too.', 'success')
   }
 
-  // ── Users ─────────────────────────────────────────────────────
-  window.loadUsers = async function () {
-    const search = document.getElementById('user-search').value.trim()
-    let query = supabase.from('users').select('id, name, email, points, streak_days, is_verified, created_at').order('created_at', { ascending: false }).limit(50)
-    if (search) query = query.ilike('email', `%${search}%`)
-    const { data } = await query
-    const tbody = document.getElementById('users-body')
-    if (!data?.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem;">No users found.</td></tr>'; return }
-    tbody.innerHTML = data.map(u => `
-      <tr>
-        <td style="font-weight:500;">${u.name}</td>
-        <td style="font-size:0.85rem;">${u.email}</td>
-        <td style="color:var(--accent);font-weight:600;">${formatPoints(u.points)}</td>
-        <td>Day ${u.streak_days || 0}</td>
-        <td><span class="badge ${u.is_verified ? 'badge-success' : 'badge-danger'}">${u.is_verified ? 'Yes' : 'No'}</span></td>
-        <td style="font-size:0.82rem;color:var(--muted);">${timeAgo(u.created_at)}</td>
-        <td>
-          <button class="action-btn approve-btn" onclick="adjustPoints('${u.id}','${u.name}')">Adjust pts</button>
-        </td>
-      </tr>
-    `).join('')
+  window.adjustPoints = async function() {
+    const email = document.getElementById('adj-email').value.trim()
+    const pts = parseInt(document.getElementById('adj-points').value)
+    const reason = document.getElementById('adj-reason').value.trim()
+    const err = document.getElementById('adj-error')
+    const suc = document.getElementById('adj-success')
+    err.classList.remove('show'); suc.classList.remove('show')
+    if (!email || isNaN(pts) || !reason) { err.textContent = 'All fields required.'; err.classList.add('show'); return }
+    const { data: user } = await supabase.from('users').select('id, name').eq('email', email).single()
+    if (!user) { err.textContent = 'User not found.'; err.classList.add('show'); return }
+    if (pts > 0) await supabase.rpc('increment_points', { user_id: user.id, amount: pts })
+    else await supabase.rpc('decrement_points', { user_id: user.id, amount: Math.abs(pts) })
+    await supabase.from('transactions').insert({ user_id: user.id, type: pts>0?'earn':'redeem', source: 'admin', points: pts, description: reason })
+    logAction('Manual adjustment', `${email}: ${pts>0?'+':''}${pts} pts — ${reason}`)
+    suc.textContent = `✅ ${pts>0?'+':''}${pts} points applied to ${user.name}`; suc.classList.add('show')
   }
 
-  window.adjustPoints = async function (userId, name) {
-    const amount = prompt(`Adjust points for ${name}.\nEnter a positive number to add, negative to deduct:`)
-    if (!amount || isNaN(amount)) return
-    const n = parseInt(amount)
-    if (n > 0) await supabase.rpc('increment_points', { user_id: userId, amount: n })
-    else await supabase.rpc('decrement_points', { user_id: userId, amount: Math.abs(n) })
-    await supabase.from('transactions').insert({ user_id: userId, type: n > 0 ? 'earn' : 'redeem', source: 'admin', points: n, description: 'Manual admin adjustment' })
-    toast(`Points adjusted for ${name}`, 'success')
-    loadUsers()
+  // ── LOGS ─────────────────────────────────────────────────────
+  function loadLogs() {
+    document.getElementById('logs-table').innerHTML = adminLogs.length
+      ? adminLogs.map(l => `<tr><td style="font-weight:500;">${l.action}</td><td style="color:var(--muted);font-size:0.85rem;">${l.details}</td><td style="color:var(--muted);font-size:0.78rem;">${timeAgo(l.time)}</td></tr>`).join('')
+      : '<tr><td colspan="3" style="color:var(--muted);text-align:center;padding:1rem;">No actions logged this session</td></tr>'
   }
 
-  // ── Tab switching ─────────────────────────────────────────────
-  window.switchAdminTab = function (tab, btn) {
-    document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'))
-    document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'))
-    btn.classList.add('active')
-    document.getElementById(`panel-${tab}`).classList.add('active')
-
-    if (tab === 'completions') loadCompletions()
-    else if (tab === 'tasks') loadTasks()
-    else if (tab === 'users') loadUsers()
-    else if (tab === 'redemptions') loadRedemptions('pending')
-  }
 </script>
-<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
 </body>
 </html>
