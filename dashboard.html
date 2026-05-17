@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2584816616413650"
-     crossorigin="anonymous"></script>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard — Grindpoint</title>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2584816616413650"
+     crossorigin="anonymous"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="css/style.css"/>
@@ -235,6 +234,16 @@
     hideLoader()
   }
 
+  async function safeInit() {
+    try {
+      await init()
+    } catch (err) {
+      console.error('Dashboard error:', err)
+      hideLoader()
+      toast('Something went wrong loading your dashboard. Please refresh.', 'error')
+    }
+  }
+
   window.openRedeem = function () {
     const section = document.getElementById('redeem-section')
     section.style.display = section.style.display === 'none' ? 'block' : 'none'
@@ -323,7 +332,7 @@
     window.location.href = 'index.html'
   })
 
-  init()
+  safeInit()
 </script>
 <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
 </body>
