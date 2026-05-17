@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head> 
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2584816616413650"
+     crossorigin="anonymous"></script>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard — Grindpoint</title>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2584816616413650"
-     crossorigin="anonymous"></script>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="css/style.css"/>
@@ -168,16 +169,33 @@
 <div id="toast-container"></div>
 
 <script type="module">
-  import { supabase } from './js/supabase.js'
-  import { requireAuth, formatPoints, pointsToNaira, timeAgo, initSidebar, hideLoader, toast } from './js/app.js'
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+  // ── paste your actual values here ──
+  const SUPABASE_URL = 'https://mygpknbimytjaynwfpdz.supabase.co'
+  const SUPABASE_KEY = 'sb_publishable__m1skyZ-JbPLhg0AsERGOA_Z3AWjxOE'
+  // ────────────────────────────────────
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+  function formatPoints(n) { return Number(n||0).toLocaleString() }
+  function pointsToNaira(n) { return '₦' + (n * 0.2).toLocaleString('en-NG', {minimumFractionDigits:2}) }
+  function timeAgo(d) { const m=Math.floor((Date.now()-new Date(d))/60000); if(m<1)return 'just now'; if(m<60)return m+'m ago'; const h=Math.floor(m/60); if(h<24)return h+'h ago'; return Math.floor(h/24)+'d ago' }
+  function toast(msg, type='info') { const icons={success:'✅',error:'❌',info:'🔔'}; let c=document.getElementById('toast-container'); if(!c){c=document.createElement('div');c.id='toast-container';document.body.appendChild(c)} const el=document.createElement('div');el.className='toast '+type;el.innerHTML=`<span>${icons[type]}</span><span>${msg}</span>`;c.appendChild(el);setTimeout(()=>el.remove(),4000) }
+  function hideLoader() { const l=document.getElementById('page-loader'); if(l)l.classList.add('hidden') }
+  function initSidebar() { const t=document.getElementById('sidebar-toggle'),s=document.getElementById('sidebar'); if(t&&s)t.addEventListener('click',()=>s.classList.toggle('open')) }
 
   initSidebar()
+
+  // Always hide loader after 5 seconds as fallback
+  setTimeout(hideLoader, 5000)
+
   let currentUser = null
   let userProfile = null
 
   async function init() {
-    const session = await requireAuth()
-    if (!session) return
+    // Check session
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) { window.location.href = 'login.html'; return }
 
     currentUser = session.user
 
@@ -333,6 +351,12 @@
   })
 
   safeInit()
+
+  // Emergency fallback — hide loader after 5 seconds no matter what
+  setTimeout(() => {
+    const loader = document.getElementById('page-loader')
+    if (loader) loader.classList.add('hidden')
+  }, 5000)
 </script>
 <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
 </body>
