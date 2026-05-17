@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2584816616413650"
-     crossorigin="anonymous"></script>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Create Account — Grindpoint</title>
@@ -11,35 +9,87 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .warning-box {
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.1rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+    .warning-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 0.1rem; }
+    .warning-text { font-size: 0.85rem; color: #fca5a5; line-height: 1.6; }
+    .warning-text strong { color: #f87171; display: block; margin-bottom: 0.25rem; font-size: 0.9rem; }
+    .checkbox-row { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 1.25rem; cursor: pointer; }
+    .checkbox-row input[type="checkbox"] { width: 16px; height: 16px; margin-top: 3px; flex-shrink: 0; accent-color: var(--accent); cursor: pointer; }
+    .checkbox-row label { font-size: 0.85rem; color: var(--muted); line-height: 1.5; cursor: pointer; }
+    .checkbox-row label a { color: var(--accent); }
+  </style>
+   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2584816616413650"
+     crossorigin="anonymous"></script>
 </head>
 <body>
 
 <div class="auth-wrap">
-  <div class="auth-box fade-up">
+  <div class="auth-box fade-up" style="max-width:480px;">
     <div class="auth-logo">
       <a href="index.html" class="logo">Grind<span>point</span></a>
     </div>
     <h2 class="auth-title">Create your account</h2>
     <p class="auth-sub">Free forever. Start earning Naira in minutes.</p>
 
+    <!-- ⚠️ Important warning -->
+    <div class="warning-box">
+      <div class="warning-icon">⚠️</div>
+      <div class="warning-text">
+        <strong>Use your correct details — this is important!</strong>
+        Your full name must match your bank account name exactly. When you request a withdrawal, we verify your account name before sending payment. Fake or incorrect details will result in failed payments and possible account suspension.
+      </div>
+    </div>
+
     <div class="alert alert-error" id="error-msg"></div>
     <div class="alert alert-success" id="success-msg"></div>
 
     <div class="form-group">
-      <label class="form-label">Full Name</label>
-      <input type="text" id="name" class="form-input" placeholder="e.g. Chidi Okafor"/>
+      <label class="form-label">Full Name <span style="color:var(--danger);font-size:0.75rem;">— must match your bank account name</span></label>
+      <input type="text" id="name" class="form-input" placeholder="e.g. Chidi Emmanuel Okafor"/>
     </div>
+
     <div class="form-group">
       <label class="form-label">Email Address</label>
       <input type="email" id="email" class="form-input" placeholder="you@example.com"/>
     </div>
+
+    <div class="form-group">
+      <label class="form-label">Phone Number <span style="color:var(--danger);font-size:0.75rem;">— for airtime redemptions</span></label>
+      <div style="display:flex;gap:0.5rem;">
+        <select id="phone-prefix" class="form-input" style="width:110px;flex-shrink:0;">
+          <option value="+234">🇳🇬 +234</option>
+        </select>
+        <input type="tel" id="phone" class="form-input" placeholder="08012345678" maxlength="11"/>
+      </div>
+    </div>
+
     <div class="form-group">
       <label class="form-label">Password</label>
-      <input type="password" id="password" class="form-input" placeholder="At least 6 characters"/>
+      <div style="position:relative;">
+        <input type="password" id="password" class="form-input" placeholder="At least 6 characters" style="padding-right:3rem;"/>
+        <button type="button" onclick="togglePassword()" style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;" id="pw-toggle">👁️</button>
+      </div>
     </div>
+
     <div class="form-group">
       <label class="form-label">Referral Code <span style="color:var(--muted);font-weight:400;">(optional)</span></label>
       <input type="text" id="referral" class="form-input" placeholder="e.g. AB12CD34" style="text-transform:uppercase"/>
+    </div>
+
+    <!-- Terms checkbox -->
+    <div class="checkbox-row">
+      <input type="checkbox" id="terms-check"/>
+      <label for="terms-check">I confirm that my details are correct and I agree to the <a href="terms.html" target="_blank">Terms of Service</a> and <a href="privacy.html" target="_blank">Privacy Policy</a></label>
     </div>
 
     <button class="btn btn-primary btn-block" id="register-btn" onclick="register()">
@@ -53,7 +103,7 @@
 
 <script type="module">
   import { supabase } from './js/supabase.js'
-  import { redirectIfLoggedIn, toast } from './js/app.js'
+  import { redirectIfLoggedIn } from './js/app.js'
 
   redirectIfLoggedIn()
 
@@ -63,41 +113,66 @@
     document.getElementById('referral').value = params.get('ref').toUpperCase()
   }
 
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') register() })
+
+  window.togglePassword = function () {
+    const pw = document.getElementById('password')
+    const btn = document.getElementById('pw-toggle')
+    if (pw.type === 'password') { pw.type = 'text'; btn.textContent = '🙈' }
+    else { pw.type = 'password'; btn.textContent = '👁️' }
+  }
+
   window.register = async function () {
     const btn = document.getElementById('register-btn')
     const errorEl = document.getElementById('error-msg')
     const successEl = document.getElementById('success-msg')
+
     const name = document.getElementById('name').value.trim()
     const email = document.getElementById('email').value.trim()
+    const phoneRaw = document.getElementById('phone').value.trim()
     const password = document.getElementById('password').value
     const referral = document.getElementById('referral').value.trim().toUpperCase()
+    const termsChecked = document.getElementById('terms-check').checked
 
     errorEl.classList.remove('show')
     successEl.classList.remove('show')
 
-    if (!name || !email || !password) {
+    if (!name || !email || !phoneRaw || !password) {
       errorEl.textContent = 'Please fill in all required fields.'
-      errorEl.classList.add('show')
-      return
+      errorEl.classList.add('show'); return
+    }
+    if (name.split(' ').filter(Boolean).length < 2) {
+      errorEl.textContent = 'Please enter your full name — first and last name.'
+      errorEl.classList.add('show'); return
     }
     if (password.length < 6) {
       errorEl.textContent = 'Password must be at least 6 characters.'
-      errorEl.classList.add('show')
-      return
+      errorEl.classList.add('show'); return
     }
+    if (!/^0[7-9][0-1]\d{8}$/.test(phoneRaw)) {
+      errorEl.textContent = 'Please enter a valid Nigerian phone number e.g. 08012345678.'
+      errorEl.classList.add('show'); return
+    }
+    if (!termsChecked) {
+      errorEl.textContent = 'Please confirm your details are correct and accept the terms to continue.'
+      errorEl.classList.add('show'); return
+    }
+
+    const phone = '+234' + phoneRaw.substring(1)
 
     btn.disabled = true
     btn.innerHTML = '<span class="spinner"></span> Creating account...'
 
-    // Sign up with Supabase Auth
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name } }
+      options: { data: { name, phone } }
     })
 
     if (error) {
-      errorEl.textContent = error.message
+      errorEl.textContent = error.message === 'User already registered'
+        ? 'An account with this email already exists. Please log in instead.'
+        : error.message
       errorEl.classList.add('show')
       btn.disabled = false
       btn.textContent = 'Create Free Account'
@@ -105,31 +180,24 @@
     }
 
     const userId = data.user.id
-
-    // Generate referral code
     const myReferralCode = Math.random().toString(36).substring(2, 10).toUpperCase()
 
-    // Insert user profile into users table
     await supabase.from('users').insert({
       id: userId,
       name,
       email: email.toLowerCase(),
+      phone,
       referral_code: myReferralCode,
       points: 0,
       streak_days: 0
     })
 
-    // Handle referral
     if (referral) {
       const { data: referrer } = await supabase
-        .from('users')
-        .select('id')
-        .eq('referral_code', referral)
-        .single()
+        .from('users').select('id').eq('referral_code', referral).single()
 
-      if (referrer) {
+      if (referrer && referrer.id !== userId) {
         await supabase.from('referrals').insert({ referrer_id: referrer.id, referred_id: userId })
-        // Award referrer 500 points
         await supabase.rpc('increment_points', { user_id: referrer.id, amount: 500 })
         await supabase.from('transactions').insert({
           user_id: referrer.id, type: 'earn', source: 'referral',
@@ -138,16 +206,16 @@
       }
     }
 
-    // Award 100 bonus points for signing up
     await supabase.rpc('increment_points', { user_id: userId, amount: 100 })
     await supabase.from('transactions').insert({
       user_id: userId, type: 'earn', source: 'signup',
-      points: 100, description: 'Welcome bonus'
+      points: 100, description: 'Welcome bonus 🎉'
     })
 
-    successEl.textContent = '🎉 Account created! Check your email to verify, then log in.'
+    successEl.innerHTML = '🎉 Account created! <strong>Check your email</strong> to verify your account, then log in to claim your 100 welcome points.'
     successEl.classList.add('show')
-    btn.textContent = 'Account Created!'
+    btn.textContent = 'Check Your Email ✉️'
+    btn.disabled = true
   }
 </script>
 </body>
