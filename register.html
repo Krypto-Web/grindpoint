@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2584816616413650"
-     crossorigin="anonymous"></script>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Create Account — Grindpoint</title>
   <meta name="description" content="Join Grindpoint free and start earning Naira today."/>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2584816616413650"
+     crossorigin="anonymous"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="css/style.css"/>
@@ -41,16 +40,17 @@
     <h2 class="auth-title">Create your account</h2>
     <p class="auth-sub">Free forever. Start earning Naira in minutes.</p>
 
+    <!-- ⚠️ Important warning -->
     <div class="warning-box">
       <div class="warning-icon">⚠️</div>
       <div class="warning-text">
         <strong>Use your correct details — this is important!</strong>
-        Your full name must match your bank account name exactly. Fake or incorrect details will result in failed payments and possible account suspension.
+        Your full name must match your bank account name exactly. When you request a withdrawal, we verify your account name before sending payment. Fake or incorrect details will result in failed payments and possible account suspension.
       </div>
     </div>
 
-    <div id="error-msg" class="alert alert-error"></div>
-    <div id="success-msg" class="alert alert-success"></div>
+    <div class="alert alert-error" id="error-msg"></div>
+    <div class="alert alert-success" id="success-msg"></div>
 
     <div class="form-group">
       <label class="form-label">Full Name <span style="color:var(--danger);font-size:0.75rem;">— must match your bank account name</span></label>
@@ -65,8 +65,8 @@
     <div class="form-group">
       <label class="form-label">Phone Number <span style="color:var(--danger);font-size:0.75rem;">— for airtime redemptions</span></label>
       <div style="display:flex;gap:0.5rem;">
-        <select class="form-input" style="width:110px;flex-shrink:0;">
-          <option>🇳🇬 +234</option>
+        <select id="phone-prefix" class="form-input" style="width:110px;flex-shrink:0;">
+          <option value="+234">🇳🇬 +234</option>
         </select>
         <input type="tel" id="phone" class="form-input" placeholder="08012345678" maxlength="11"/>
       </div>
@@ -76,7 +76,7 @@
       <label class="form-label">Password</label>
       <div style="position:relative;">
         <input type="password" id="password" class="form-input" placeholder="At least 6 characters" style="padding-right:3rem;"/>
-        <button type="button" id="pw-toggle" style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;">👁️</button>
+        <button type="button" onclick="togglePassword()" style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;" id="pw-toggle">👁️</button>
       </div>
     </div>
 
@@ -85,12 +85,15 @@
       <input type="text" id="referral" class="form-input" placeholder="e.g. AB12CD34" style="text-transform:uppercase"/>
     </div>
 
+    <!-- Terms checkbox -->
     <div class="checkbox-row">
       <input type="checkbox" id="terms-check"/>
-      <label for="terms-check">I confirm my details are correct and I agree to the <a href="terms.html" target="_blank">Terms of Service</a> and <a href="privacy.html" target="_blank">Privacy Policy</a></label>
+      <label for="terms-check">I confirm that my details are correct and I agree to the <a href="terms.html" target="_blank">Terms of Service</a> and <a href="privacy.html" target="_blank">Privacy Policy</a></label>
     </div>
 
-    <button class="btn btn-primary btn-block" id="register-btn">Create Free Account</button>
+    <button class="btn btn-primary btn-block" id="register-btn" onclick="register()">
+      Create Free Account
+    </button>
 
     <hr class="divider"/>
     <p style="text-align:center;font-size:0.9rem;">Already have an account? <a href="login.html">Sign in</a></p>
@@ -98,104 +101,42 @@
 </div>
 
 <script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+  import { supabase } from './js/supabase.js'
+  import { redirectIfLoggedIn } from './js/app.js'
 
-  // ── paste your actual values here ──
-  const SUPABASE_URL = 'https://mygpknbimytjaynwfpdz.supabase.co'
-  const SUPABASE_KEY = 'sb_publishable__m1skyZ-JbPLhg0AsERGOA_Z3AWjxOE'
-  // ────────────────────────────────────
-  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+  redirectIfLoggedIn()
 
-  const btn = document.getElementById('register-btn')
-  const errorEl = document.getElementById('error-msg')
-  const successEl = document.getElementById('success-msg')
-
-  // Pre-fill referral from URL
-  const ref = new URLSearchParams(window.location.search).get('ref')
-  if (ref) document.getElementById('referral').value = ref.toUpperCase()
-
-  // Password toggle
-  document.getElementById('pw-toggle').addEventListener('click', () => {
-    const pw = document.getElementById('password')
-    const btn = document.getElementById('pw-toggle')
-    pw.type = pw.type === 'password' ? 'text' : 'password'
-    btn.textContent = pw.type === 'password' ? '👁️' : '🙈'
-  })
-
-  async function insertUserProfile(userId, name, email, phone, referralCode) {
-    const myReferralCode = Math.random().toString(36).substring(2, 10).toUpperCase()
-
-    // Keep trying to insert — retry up to 3 times
-    for (let i = 0; i < 3; i++) {
-      const { error } = await supabase.from('users').insert({
-        id: userId,
-        name,
-        email: email.toLowerCase(),
-        phone,
-        referral_code: myReferralCode,
-        points: 100, // welcome bonus built in
-        streak_days: 0,
-        is_verified: false
-      })
-
-      if (!error) {
-        // Log welcome bonus transaction
-        await supabase.from('transactions').insert({
-          user_id: userId,
-          type: 'earn',
-          source: 'signup',
-          points: 100,
-          description: 'Welcome bonus 🎉'
-        })
-
-        // Handle referral
-        if (referralCode) {
-          const { data: referrer } = await supabase
-            .from('users')
-            .select('id')
-            .eq('referral_code', referralCode)
-            .single()
-
-          if (referrer && referrer.id !== userId) {
-            await supabase.from('referrals').insert({
-              referrer_id: referrer.id,
-              referred_id: userId
-            })
-            await supabase.rpc('increment_points', { user_id: referrer.id, amount: 500 })
-            await supabase.from('transactions').insert({
-              user_id: referrer.id,
-              type: 'earn',
-              source: 'referral',
-              points: 500,
-              description: 'Referral bonus — friend joined'
-            })
-          }
-        }
-        return true
-      }
-
-      // If duplicate (user already exists), that's fine
-      if (error.code === '23505') return true
-
-      // Wait 1 second before retry
-      await new Promise(r => setTimeout(r, 1000))
-    }
-    return false
+  // Pre-fill referral code from URL param
+  const params = new URLSearchParams(window.location.search)
+  if (params.get('ref')) {
+    document.getElementById('referral').value = params.get('ref').toUpperCase()
   }
 
-  async function doRegister() {
-    errorEl.classList.remove('show')
-    successEl.classList.remove('show')
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') register() })
+
+  window.togglePassword = function () {
+    const pw = document.getElementById('password')
+    const btn = document.getElementById('pw-toggle')
+    if (pw.type === 'password') { pw.type = 'text'; btn.textContent = '🙈' }
+    else { pw.type = 'password'; btn.textContent = '👁️' }
+  }
+
+  window.register = async function () {
+    const btn = document.getElementById('register-btn')
+    const errorEl = document.getElementById('error-msg')
+    const successEl = document.getElementById('success-msg')
 
     const name = document.getElementById('name').value.trim()
     const email = document.getElementById('email').value.trim()
-    const phone = document.getElementById('phone').value.trim()
+    const phoneRaw = document.getElementById('phone').value.trim()
     const password = document.getElementById('password').value
     const referral = document.getElementById('referral').value.trim().toUpperCase()
     const termsChecked = document.getElementById('terms-check').checked
 
-    // Validations
-    if (!name || !email || !phone || !password) {
+    errorEl.classList.remove('show')
+    successEl.classList.remove('show')
+
+    if (!name || !email || !phoneRaw || !password) {
       errorEl.textContent = 'Please fill in all required fields.'
       errorEl.classList.add('show'); return
     }
@@ -207,29 +148,28 @@
       errorEl.textContent = 'Password must be at least 6 characters.'
       errorEl.classList.add('show'); return
     }
-    if (!/^0[7-9][0-1]\d{8}$/.test(phone)) {
+    if (!/^0[7-9][0-1]\d{8}$/.test(phoneRaw)) {
       errorEl.textContent = 'Please enter a valid Nigerian phone number e.g. 08012345678.'
       errorEl.classList.add('show'); return
     }
     if (!termsChecked) {
-      errorEl.textContent = 'Please confirm your details and accept the terms.'
+      errorEl.textContent = 'Please confirm your details are correct and accept the terms to continue.'
       errorEl.classList.add('show'); return
     }
 
-    const formattedPhone = '+234' + phone.substring(1)
+    const phone = '+234' + phoneRaw.substring(1)
 
     btn.disabled = true
     btn.innerHTML = '<span class="spinner"></span> Creating account...'
 
-    // Step 1: Create Supabase Auth user
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name, phone: formattedPhone } }
+      options: { data: { name, phone } }
     })
 
     if (error) {
-      errorEl.textContent = error.message.includes('already registered')
+      errorEl.textContent = error.message === 'User already registered'
         ? 'An account with this email already exists. Please log in instead.'
         : error.message
       errorEl.classList.add('show')
@@ -238,32 +178,44 @@
       return
     }
 
-    const userId = data.user?.id
-    if (!userId) {
-      errorEl.textContent = 'Something went wrong. Please try again.'
-      errorEl.classList.add('show')
-      btn.disabled = false
-      btn.textContent = 'Create Free Account'
-      return
+    const userId = data.user.id
+    const myReferralCode = Math.random().toString(36).substring(2, 10).toUpperCase()
+
+    await supabase.from('users').insert({
+      id: userId,
+      name,
+      email: email.toLowerCase(),
+      phone,
+      referral_code: myReferralCode,
+      points: 0,
+      streak_days: 0
+    })
+
+    if (referral) {
+      const { data: referrer } = await supabase
+        .from('users').select('id').eq('referral_code', referral).single()
+
+      if (referrer && referrer.id !== userId) {
+        await supabase.from('referrals').insert({ referrer_id: referrer.id, referred_id: userId })
+        await supabase.rpc('increment_points', { user_id: referrer.id, amount: 500 })
+        await supabase.from('transactions').insert({
+          user_id: referrer.id, type: 'earn', source: 'referral',
+          points: 500, description: 'Referral bonus — friend joined'
+        })
+      }
     }
 
-    // Step 2: Insert profile into users table (with retry)
-    const inserted = await insertUserProfile(userId, name, email, formattedPhone, referral)
-
-    if (!inserted) {
-      // Account was created in Auth but profile insert failed
-      // Still show success — we'll sync via SQL
-      console.error('Profile insert failed for', userId)
-    }
+    await supabase.rpc('increment_points', { user_id: userId, amount: 100 })
+    await supabase.from('transactions').insert({
+      user_id: userId, type: 'earn', source: 'signup',
+      points: 100, description: 'Welcome bonus 🎉'
+    })
 
     successEl.innerHTML = '🎉 Account created! <strong>Check your email</strong> to verify your account, then log in to claim your 100 welcome points.'
     successEl.classList.add('show')
     btn.textContent = 'Check Your Email ✉️'
     btn.disabled = true
   }
-
-  btn.addEventListener('click', doRegister)
-  document.addEventListener('keydown', e => { if (e.key === 'Enter') doRegister() })
 </script>
 </body>
 </html>
