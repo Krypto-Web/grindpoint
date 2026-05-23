@@ -70,27 +70,26 @@
 </div>
 
 <script type="module">
-  import { supabase } from './js/supabase.js'
-  import { requireAuth, formatPoints, initSidebar, hideLoader } from './js/app.js'
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+  const supabase = createClient('https://mygpknbimytjaynwfpdz.supabase.co','sb_publishable__m1skyZ-JbPLhg0AsERGOA_Z3AWjxOE')
 
-  initSidebar()
+  const fmt = n => Number(n||0).toLocaleString()
+  const hideLoader = () => { const l=document.getElementById('page-loader'); if(l)l.classList.add('hidden') }
+
+  document.getElementById('sidebar-toggle')?.addEventListener('click', () => document.getElementById('sidebar')?.classList.toggle('open'))
+  setTimeout(hideLoader, 5000)
 
   async function init() {
-    const session = await requireAuth()
-    if (!session) return
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) { window.location.href = 'login.html'; return }
     const currentUserId = session.user.id
 
-    const { data: users } = await supabase
-      .from('users')
-      .select('id, name, points')
-      .order('points', { ascending: false })
-      .limit(50)
-
+    const { data: users } = await supabase.from('users').select('id, name, points').order('points', { ascending: false }).limit(50)
     if (!users?.length) { hideLoader(); return }
 
-    // Podium — top 3
+    // Podium top 3
     const top3 = users.slice(0, 3)
-    const podiumOrder = [top3[1], top3[0], top3[2]].filter(Boolean) // silver, gold, bronze
+    const podiumOrder = [top3[1], top3[0], top3[2]].filter(Boolean)
     const classes = ['silver', 'gold', 'bronze']
     const labels = ['2nd', '1st', '3rd']
 
@@ -98,36 +97,28 @@
       <div class="podium-item">
         <div class="podium-avatar ${classes[i]}">👤</div>
         <div class="podium-name">${u.name.split(' ')[0]}</div>
-        <div class="podium-pts">${formatPoints(u.points)} pts</div>
+        <div class="podium-pts">${fmt(u.points)} pts</div>
         <div class="podium-block ${classes[i]}">${labels[i]}</div>
-      </div>
-    `).join('')
+      </div>`).join('')
 
-    // Full list
     const rankClasses = ['gold', 'silver', 'bronze']
     document.getElementById('lb-list').innerHTML = users.map((u, i) => `
-      <div class="lb-item" style="${u.id === currentUserId ? 'background:rgba(245,166,35,0.06);border-color:rgba(245,166,35,0.3);' : ''}">
-        <div class="lb-rank ${rankClasses[i] || ''}">${i + 1}</div>
-        <div class="lb-name">${u.name} ${u.id === currentUserId ? '<span class="badge badge-accent" style="font-size:0.7rem;">You</span>' : ''}</div>
-        <div class="lb-pts">${formatPoints(u.points)} pts</div>
-      </div>
-    `).join('')
+      <div class="lb-item" style="${u.id===currentUserId?'background:rgba(245,166,35,0.06);border-color:rgba(245,166,35,0.3);':''}">
+        <div class="lb-rank ${rankClasses[i]||''}">${i+1}</div>
+        <div class="lb-name">${u.name} ${u.id===currentUserId?'<span class="badge badge-accent" style="font-size:0.7rem;">You</span>':''}</div>
+        <div class="lb-pts">${fmt(u.points)} pts</div>
+      </div>`).join('')
 
-    // My rank card
     const myRank = users.findIndex(u => u.id === currentUserId)
     if (myRank !== -1) {
       document.getElementById('my-rank-card').style.display = 'block'
-      document.getElementById('my-rank-display').textContent = `#${myRank + 1} of ${users.length} — ${formatPoints(users[myRank].points)} points`
+      document.getElementById('my-rank-display').textContent = `#${myRank+1} of ${users.length} — ${fmt(users[myRank].points)} points`
     }
 
     hideLoader()
   }
 
-  document.getElementById('logout-btn').addEventListener('click', async e => {
-    e.preventDefault()
-    await supabase.auth.signOut()
-    window.location.href = 'index.html'
-  })
+  document.getElementById('logout-btn').addEventListener('click', async e => { e.preventDefault(); await supabase.auth.signOut(); window.location.href = 'index.html' })
 
   init()
 </script>
