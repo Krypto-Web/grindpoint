@@ -104,84 +104,55 @@
 <div id="toast-container"></div>
 
 <script type="module">
-  import { supabase } from './js/supabase.js'
-  import { requireAuth, formatPoints, timeAgo, initSidebar, hideLoader, toast } from './js/app.js'
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+  const supabase = createClient('https://mygpknbimytjaynwfpdz.supabase.co','sb_publishable__m1skyZ-JbPLhg0AsERGOA_Z3AWjxOE')
 
-  initSidebar()
-  let referralCode = ''
-  let appUrl = window.location.origin
+  const fmt = n => Number(n||0).toLocaleString()
+  const timeAgo = d => { const m=Math.floor((Date.now()-new Date(d))/60000); if(m<1)return 'just now'; if(m<60)return m+'m ago'; const h=Math.floor(m/60); if(h<24)return h+'h ago'; return Math.floor(h/24)+'d ago' }
+  const toast = (msg,type='info') => { const icons={success:'✅',error:'❌',info:'🔔'}; const c=document.getElementById('toast-container')||Object.assign(document.createElement('div'),{id:'toast-container'}); if(!document.getElementById('toast-container'))document.body.appendChild(c); const el=document.createElement('div'); el.className=`toast ${type}`; el.innerHTML=`<span>${icons[type]}</span><span>${msg}</span>`; c.appendChild(el); setTimeout(()=>el.remove(),4000) }
+  const hideLoader = () => { const l=document.getElementById('page-loader'); if(l)l.classList.add('hidden') }
+
+  document.getElementById('sidebar-toggle')?.addEventListener('click', () => document.getElementById('sidebar')?.classList.toggle('open'))
+  setTimeout(hideLoader, 5000)
 
   async function init() {
-    const session = await requireAuth()
-    if (!session) return
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) { window.location.href = 'login.html'; return }
 
-    const { data: profile } = await supabase
-      .from('users')
-      .select('referral_code')
-      .eq('id', session.user.id)
-      .single()
-
-    referralCode = profile.referral_code
-    const refLink = `${appUrl}/register.html?ref=${referralCode}`
+    const { data: profile } = await supabase.from('users').select('referral_code').eq('id', session.user.id).single()
+    const referralCode = profile?.referral_code || '——'
+    const refLink = `${window.location.origin}/register.html?ref=${referralCode}`
 
     document.getElementById('ref-code').textContent = referralCode
     document.getElementById('ref-link').value = refLink
 
-    // Referral stats
-    const { data: refs } = await supabase
-      .from('referrals')
-      .select('*, users!referred_id(name, created_at)')
-      .eq('referrer_id', session.user.id)
-      .order('created_at', { ascending: false })
+    const { data: refs } = await supabase.from('referrals').select('*, users!referred_id(name, created_at)').eq('referrer_id', session.user.id).order('created_at', { ascending: false })
 
     document.getElementById('ref-count').textContent = refs?.length || 0
-    document.getElementById('ref-pts').textContent = formatPoints((refs?.length || 0) * 500)
+    document.getElementById('ref-pts').textContent = fmt((refs?.length || 0) * 500)
 
-    // List
     const list = document.getElementById('ref-list')
-    if (!refs?.length) {
-      list.innerHTML = '<div style="color:var(--muted);font-size:0.9rem;padding:0.5rem 0;">No referrals yet. Share your link to start earning!</div>'
-    } else {
-      list.innerHTML = refs.map(r => `
-        <div class="ref-item">
-          <div class="ref-avatar">👤</div>
-          <div style="flex:1;">
-            <div style="font-weight:500;font-size:0.9rem;">${r.users?.name || 'User'}</div>
-            <div style="font-size:0.78rem;color:var(--muted);">Joined ${timeAgo(r.created_at)}</div>
-          </div>
-          <span class="badge badge-success">+500 pts</span>
-        </div>
-      `).join('')
-    }
+    list.innerHTML = refs?.length
+      ? refs.map(r => `
+          <div class="ref-item">
+            <div class="ref-avatar">👤</div>
+            <div style="flex:1;">
+              <div style="font-weight:500;font-size:0.9rem;">${r.users?.name || 'User'}</div>
+              <div style="font-size:0.78rem;color:var(--muted);">Joined ${timeAgo(r.created_at)}</div>
+            </div>
+            <span class="badge badge-success">+500 pts</span>
+          </div>`).join('')
+      : '<div style="color:var(--muted);font-size:0.9rem;padding:0.5rem 0;">No referrals yet. Share your link to start earning!</div>'
 
     hideLoader()
   }
 
-  window.copyLink = function () {
-    navigator.clipboard.writeText(document.getElementById('ref-link').value)
-    toast('Referral link copied!', 'success')
-  }
+  window.copyLink = () => { navigator.clipboard.writeText(document.getElementById('ref-link').value); toast('Referral link copied!', 'success') }
+  window.shareWhatsApp = () => { const l=document.getElementById('ref-link').value; window.open(`https://wa.me/?text=${encodeURIComponent('Join me on Grindpoint and earn real Naira! '+l)}`, '_blank') }
+  window.shareTwitter = () => { const l=document.getElementById('ref-link').value; window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent('Earning Naira on Grindpoint 🔥 Join: '+l)}`, '_blank') }
+  window.shareTelegram = () => { const l=document.getElementById('ref-link').value; window.open(`https://t.me/share/url?url=${encodeURIComponent(l)}&text=${encodeURIComponent('Join Grindpoint and earn Naira! 🇳🇬')}`, '_blank') }
 
-  window.shareWhatsApp = function () {
-    const link = document.getElementById('ref-link').value
-    window.open(`https://wa.me/?text=${encodeURIComponent(`Join me on Grindpoint and earn real Naira! Use my referral link: ${link}`)}`, '_blank')
-  }
-
-  window.shareTwitter = function () {
-    const link = document.getElementById('ref-link').value
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I've been earning Naira on Grindpoint 🔥 Join with my link and get started: ${link}`)}`, '_blank')
-  }
-
-  window.shareTelegram = function () {
-    const link = document.getElementById('ref-link').value
-    window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('Join Grindpoint and earn Naira! 🇳🇬🔥')}`, '_blank')
-  }
-
-  document.getElementById('logout-btn').addEventListener('click', async e => {
-    e.preventDefault()
-    await supabase.auth.signOut()
-    window.location.href = 'index.html'
-  })
+  document.getElementById('logout-btn').addEventListener('click', async e => { e.preventDefault(); await supabase.auth.signOut(); window.location.href = 'index.html' })
 
   init()
 </script>
