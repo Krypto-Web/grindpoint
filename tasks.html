@@ -78,8 +78,22 @@
     </div>
     <div id="modal-proof-section" style="display:none;">
       <div class="form-group">
-        <label class="form-label">Proof / submission (screenshot URL or answer)</label>
-        <input type="text" id="modal-proof" class="form-input" placeholder="Paste link or type your answer"/>
+        <label class="form-label">Your answer or description</label>
+        <input type="text" id="modal-proof" class="form-input" placeholder="Type your answer or describe what you did"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Attach screenshot / photo proof <span style="color:var(--muted);font-weight:400;">(optional but recommended)</span></label>
+        <div style="border:2px dashed var(--border);border-radius:var(--radius-sm);padding:1.25rem;text-align:center;cursor:pointer;transition:border-color 0.2s;" id="upload-zone" onclick="document.getElementById('proof-file').click()">
+          <div style="font-size:1.5rem;margin-bottom:0.4rem;">📸</div>
+          <div style="font-size:0.85rem;color:var(--muted);">Click to upload image</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:0.25rem;">JPG, PNG, WEBP — max 5MB</div>
+        </div>
+        <input type="file" id="proof-file" accept="image/*" style="display:none;" onchange="previewFile(this)"/>
+        <div id="file-preview" style="margin-top:0.75rem;display:none;">
+          <img id="preview-img" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border);"/>
+          <div style="font-size:0.78rem;color:var(--success);margin-top:0.4rem;" id="file-name"></div>
+          <button onclick="clearFile()" style="background:none;border:none;color:var(--danger);font-size:0.78rem;cursor:pointer;margin-top:0.25rem;">✕ Remove</button>
+        </div>
       </div>
     </div>
     <div class="alert alert-error" id="modal-error"></div>
@@ -175,16 +189,41 @@
 
   window.closeModal = () => document.getElementById('task-modal').classList.remove('open')
 
+  window.previewFile = function(input) {
+    if (!input.files || !input.files[0]) return
+    const file = input.files[0]
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File too large. Max 5MB.')
+      input.value = ''
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = e => {
+      document.getElementById('preview-img').src = e.target.result
+      document.getElementById('file-name').textContent = '✅ ' + file.name
+      document.getElementById('file-preview').style.display = 'block'
+      document.getElementById('upload-zone').style.borderColor = 'rgba(34,197,94,0.5)'
+    }
+    reader.readAsDataURL(file)
+  }
+
+  window.clearFile = function() {
+    document.getElementById('proof-file').value = ''
+    document.getElementById('file-preview').style.display = 'none'
+    document.getElementById('upload-zone').style.borderColor = 'var(--border)'
+  }
+
   window.confirmTask = async function () {
     const task = allTasks.find(t => t.id === activeTaskId)
-    const proof = document.getElementById('modal-proof').value.trim()
+    const proofText = document.getElementById('modal-proof').value.trim()
+    const proofFile = document.getElementById('proof-file').files[0]
     const btn = document.getElementById('modal-confirm-btn')
     const errorEl = document.getElementById('modal-error')
     const successEl = document.getElementById('modal-success')
 
     errorEl.classList.remove('show')
-    if (task.requires_review && !proof) {
-      errorEl.textContent = 'Please provide proof to submit this task.'
+    if (task.requires_review && !proofText && !proofFile) {
+      errorEl.textContent = 'Please provide proof — type an answer or attach a screenshot.'
       errorEl.classList.add('show')
       return
     }
@@ -192,10 +231,30 @@
     btn.disabled = true
     btn.innerHTML = '<span class="spinner"></span> Submitting...'
 
+    // Upload image if provided
+    let proofUrl = proofText || null
+    if (proofFile) {
+      btn.innerHTML = '<span class="spinner"></span> Uploading image...'
+      const fileName = `${currentUser.id}/${activeTaskId}_${Date.now()}.${proofFile.name.split('.').pop()}`
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('task-proofs')
+        .upload(fileName, proofFile, { upsert: true })
+      
+      if (!uploadError) {
+        const { data: urlData } = supabase.storage.from('task-proofs').getPublicUrl(fileName)
+        proofUrl = urlData?.publicUrl || proofText || 'Image uploaded'
+      } else {
+        // Storage might not be set up — save as text note
+        proofUrl = proofText || 'Screenshot attached (upload failed — please contact support)'
+        console.log('Storage upload error:', uploadError)
+      }
+      btn.innerHTML = '<span class="spinner"></span> Submitting...'
+    }
+
     const { error } = await supabase.from('task_completions').insert({
       user_id: currentUser.id,
       task_id: activeTaskId,
-      proof: proof || null,
+      proof: proofUrl,
       status: task.requires_review ? 'pending' : 'approved'
     })
 
