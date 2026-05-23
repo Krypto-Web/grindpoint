@@ -3,21 +3,25 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Tasks — Grindpoint</title>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2584816616413650" crossorigin="anonymous"></script>
+  <title>Dashboard — Grindpoint</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="css/style.css"/>
   <style>
-    .filter-row { display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1.5rem; }
-    .filter-btn { padding:0.4rem 1rem; border-radius:50px; border:1px solid var(--border); background:transparent; color:var(--muted); font-family:'DM Sans',sans-serif; font-size:0.85rem; cursor:pointer; transition:all 0.2s; }
-    .filter-btn.active { background:var(--accent); color:#0a0a0b; border-color:var(--accent); font-weight:600; }
-    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:200; display:none; align-items:center; justify-content:center; padding:1rem; }
-    .modal-overlay.open { display:flex; }
-    .modal { background:var(--bg2); border:1px solid var(--border); border-radius:20px; padding:2rem; max-width:460px; width:100%; }
-    .modal h3 { margin-bottom:0.5rem; }
-    .modal p { font-size:0.9rem; margin-bottom:1.25rem; }
+    .balance-card{background:linear-gradient(135deg,rgba(245,166,35,0.15),rgba(255,107,53,0.1));border:1px solid rgba(245,166,35,0.3);border-radius:14px;padding:2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;}
+    .tx-item{display:flex;align-items:center;gap:1rem;padding:0.85rem 0;border-bottom:1px solid var(--border);}
+    .tx-item:last-child{border-bottom:none;}
+    .tx-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+    .tx-name{font-size:0.9rem;font-weight:500;color:var(--text);}
+    .tx-time{font-size:0.78rem;color:var(--muted);}
+    .tx-pts{font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;}
+    .tab-btn{padding:0.5rem 1.25rem;border-radius:50px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:0.88rem;cursor:pointer;transition:all 0.2s;}
+    .tab-btn.active{background:var(--accent);color:#0a0a0b;border-color:var(--accent);font-weight:600;}
+    .tab-panel{display:none;}
+    .tab-panel.active{display:block;}
+    .redeem-box{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:1.75rem;margin-top:1.5rem;}
   </style>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2584816616413650" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -29,8 +33,8 @@
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo"><a href="index.html" class="logo">Grind<span>point</span></a></div>
     <ul class="sidebar-nav">
-      <li><a href="dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a></li>
-      <li><a href="tasks.html" class="active"><span class="nav-icon">✅</span> Tasks</a></li>
+      <li><a href="dashboard.html" class="active"><span class="nav-icon">🏠</span> Dashboard</a></li>
+      <li><a href="tasks.html"><span class="nav-icon">✅</span> Tasks</a></li>
       <li><a href="leaderboard.html"><span class="nav-icon">🏆</span> Leaderboard</a></li>
       <li><a href="referral.html"><span class="nav-icon">👥</span> Referrals</a></li>
       <li><a href="#" id="logout-btn" style="margin-top:2rem;"><span class="nav-icon">🚪</span> Logout</a></li>
@@ -40,253 +44,274 @@
   <main class="dash-main">
     <div class="dash-header-bar">
       <div>
-        <h1>Tasks</h1>
-        <p style="font-size:0.9rem;margin-top:0.2rem;">Complete tasks to earn points</p>
+        <h1>Dashboard</h1>
+        <p id="welcome-msg" style="font-size:0.9rem;margin-top:0.2rem;color:var(--muted);">Loading...</p>
       </div>
       <button id="sidebar-toggle" class="nav-mobile-toggle">☰</button>
     </div>
 
-    <ins class="adsbygoogle" style="display:block;margin-bottom:1.5rem;" data-ad-client="ca-pub-2584816616413650" data-ad-slot="5544332211" data-ad-format="auto" data-full-width-responsive="true"></ins>
-
-    <!-- Filters -->
-    <div class="filter-row">
-      <button class="filter-btn active" onclick="filterTasks('all', this)">All</button>
-      <button class="filter-btn" onclick="filterTasks('watch_ad', this)">📺 Watch Ads</button>
-      <button class="filter-btn" onclick="filterTasks('social', this)">📱 Social</button>
-      <button class="filter-btn" onclick="filterTasks('transcription', this)">🎙️ Transcription</button>
-      <button class="filter-btn" onclick="filterTasks('app_testing', this)">🧪 App Testing</button>
-      <button class="filter-btn" onclick="filterTasks('data_labeling', this)">🏷️ Data Labeling</button>
-      <button class="filter-btn" onclick="filterTasks('trivia', this)">🧠 Trivia</button>
-      <button class="filter-btn" onclick="filterTasks('mini_game', this)">🎮 Mini-Game</button>
+    <!-- Balance card -->
+    <div class="balance-card">
+      <div>
+        <div style="font-size:0.82rem;color:var(--muted);margin-bottom:0.3rem;">Total Points Balance</div>
+        <div style="font-family:'Syne',sans-serif;font-size:2.8rem;font-weight:800;color:var(--accent);line-height:1;" id="points-display">—</div>
+        <div style="font-size:0.82rem;color:var(--muted);margin-top:0.3rem;" id="naira-display">≈ ₦0.00</div>
+        <div style="margin-top:0.75rem;font-size:0.82rem;color:var(--muted);">🔥 Streak: <strong id="streak-display" style="color:var(--accent);">—</strong></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.75rem;">
+        <a href="tasks.html" class="btn btn-primary">Earn More</a>
+        <button class="btn btn-ghost" onclick="toggleRedeem()">Redeem Points</button>
+      </div>
     </div>
 
-    <div class="tasks-grid" id="tasks-grid">
-      <div style="color:var(--muted);">Loading tasks...</div>
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num" id="stat-earned">—</div><div class="stat-lbl">Points earned</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-redeemed">—</div><div class="stat-lbl">Points redeemed</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-tasks">—</div><div class="stat-lbl">Tasks done</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-refs">—</div><div class="stat-lbl">Referrals</div></div>
+    </div>
+
+    <!-- Recent transactions -->
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <h3 style="font-size:1rem;">Recent Activity</h3>
+      </div>
+      <div id="tx-list"><div style="color:var(--muted);font-size:0.9rem;">Loading...</div></div>
+    </div>
+
+    <!-- Redeem section -->
+    <div class="redeem-box" id="redeem-section" style="display:none;">
+      <h3 style="margin-bottom:1rem;">Redeem Points</h3>
+      <div style="background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.2);border-radius:8px;padding:0.85rem 1rem;margin-bottom:1.5rem;font-size:0.88rem;color:var(--accent);">
+        💡 Minimum: 1,000 points = ₦200. Your balance: <strong id="redeem-bal">—</strong> pts
+      </div>
+      <div style="display:flex;gap:0.5rem;margin-bottom:1.5rem;">
+        <button class="tab-btn active" id="tab-bank-btn" onclick="switchTab('bank')">🏦 Bank Transfer</button>
+        <button class="tab-btn" id="tab-air-btn" onclick="switchTab('airtime')">📱 Airtime</button>
+      </div>
+
+      <div class="tab-panel active" id="tab-bank">
+        <div class="form-group"><label class="form-label">Points to redeem</label><input type="number" id="bank-points" class="form-input" placeholder="Min 1000" min="1000"/><div id="bank-preview" style="font-size:0.82rem;color:var(--accent);margin-top:0.4rem;"></div></div>
+        <div class="form-group"><label class="form-label">Bank Name</label><input type="text" id="bank-name" class="form-input" placeholder="e.g. GTBank, Access, Zenith"/></div>
+        <div class="form-group"><label class="form-label">Account Number</label><input type="text" id="bank-num" class="form-input" placeholder="10-digit account number" maxlength="10"/></div>
+        <div class="form-group"><label class="form-label">Account Name</label><input type="text" id="bank-acct-name" class="form-input" placeholder="Name on the account"/></div>
+        <div id="bank-error" class="alert alert-error"></div>
+        <div id="bank-success" class="alert alert-success"></div>
+        <button class="btn btn-primary btn-block" onclick="redeemBank()">Submit Withdrawal</button>
+      </div>
+
+      <div class="tab-panel" id="tab-airtime">
+        <div class="form-group"><label class="form-label">Points to redeem</label><input type="number" id="air-points" class="form-input" placeholder="Min 1000" min="1000"/><div id="air-preview" style="font-size:0.82rem;color:var(--accent);margin-top:0.4rem;"></div></div>
+        <div class="form-group"><label class="form-label">Phone Number</label><input type="tel" id="air-phone" class="form-input" placeholder="e.g. 08012345678"/></div>
+        <div class="form-group"><label class="form-label">Network</label>
+          <select id="air-network" class="form-input">
+            <option value="">Select network</option>
+            <option>MTN</option><option>Airtel</option><option>Glo</option><option>9mobile</option>
+          </select>
+        </div>
+        <div id="air-error" class="alert alert-error"></div>
+        <div id="air-success" class="alert alert-success"></div>
+        <button class="btn btn-primary btn-block" onclick="redeemAirtime()">Submit Airtime Request</button>
+      </div>
     </div>
   </main>
-</div>
-
-<!-- Task modal -->
-<div class="modal-overlay" id="task-modal">
-  <div class="modal">
-    <div id="modal-icon" style="font-size:2.5rem;margin-bottom:0.75rem;"></div>
-    <h3 id="modal-title"></h3>
-    <p id="modal-desc"></p>
-    <div style="background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.2);border-radius:var(--radius-sm);padding:0.75rem 1rem;margin-bottom:1.25rem;font-size:0.88rem;">
-      Reward: <strong id="modal-pts" style="color:var(--accent);"></strong>
-      <span id="modal-review" style="color:var(--muted);"></span>
-    </div>
-    <div id="modal-proof-section" style="display:none;">
-      <div class="form-group">
-        <label class="form-label">Your answer or description</label>
-        <input type="text" id="modal-proof" class="form-input" placeholder="Type your answer or describe what you did"/>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Attach screenshot / photo proof <span style="color:var(--muted);font-weight:400;">(optional but recommended)</span></label>
-        <div style="border:2px dashed var(--border);border-radius:var(--radius-sm);padding:1.25rem;text-align:center;cursor:pointer;transition:border-color 0.2s;" id="upload-zone" onclick="document.getElementById('proof-file').click()">
-          <div style="font-size:1.5rem;margin-bottom:0.4rem;">📸</div>
-          <div style="font-size:0.85rem;color:var(--muted);">Click to upload image</div>
-          <div style="font-size:0.75rem;color:var(--muted);margin-top:0.25rem;">JPG, PNG, WEBP — max 5MB</div>
-        </div>
-        <input type="file" id="proof-file" accept="image/*" style="display:none;" onchange="previewFile(this)"/>
-        <div id="file-preview" style="margin-top:0.75rem;display:none;">
-          <img id="preview-img" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border);"/>
-          <div style="font-size:0.78rem;color:var(--success);margin-top:0.4rem;" id="file-name"></div>
-          <button onclick="clearFile()" style="background:none;border:none;color:var(--danger);font-size:0.78rem;cursor:pointer;margin-top:0.25rem;">✕ Remove</button>
-        </div>
-      </div>
-    </div>
-    <div class="alert alert-error" id="modal-error"></div>
-    <div class="alert alert-success" id="modal-success"></div>
-    <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
-      <button class="btn btn-primary" id="modal-confirm-btn" onclick="confirmTask()">Complete Task</button>
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-    </div>
-  </div>
 </div>
 
 <div id="toast-container"></div>
 
 <script type="module">
-  import { supabase } from './js/supabase.js'
-  import { requireAuth, formatPoints, initSidebar, hideLoader, toast } from './js/app.js'
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-  initSidebar()
+  const supabase = createClient(
+    'https://mygpknbimytjaynwfpdz.supabase.co',
+    'sb_publishable__m1skyZ-JbPLhg0AsERGOA_Z3AWjxOE'
+  )
 
-  const typeIcons = { watch_ad:'📺', social:'📱', transcription:'🎙️', app_testing:'🧪', data_labeling:'🏷️', trivia:'🧠', mini_game:'🎮', other:'⚡' }
+  // ── Helpers ───────────────────────────────────────
+  const fmt = n => Number(n||0).toLocaleString()
+  const toNaira = n => '₦' + (n * 0.2).toLocaleString('en-NG', {minimumFractionDigits:2})
+  const timeAgo = d => { const m=Math.floor((Date.now()-new Date(d))/60000); if(m<1)return 'just now'; if(m<60)return m+'m ago'; const h=Math.floor(m/60); if(h<24)return h+'h ago'; return Math.floor(h/24)+'d ago' }
+  const toast = (msg, type='info') => { const icons={success:'✅',error:'❌',info:'🔔'}; const c=document.getElementById('toast-container'); const el=document.createElement('div'); el.className=`toast ${type}`; el.innerHTML=`<span>${icons[type]}</span><span>${msg}</span>`; c.appendChild(el); setTimeout(()=>el.remove(),4000) }
+  const hideLoader = () => { const l=document.getElementById('page-loader'); if(l)l.classList.add('hidden') }
 
-  let allTasks = []
-  let completedIds = []
-  let activeTaskId = null
-  let currentUser = null
+  // Sidebar toggle
+  document.getElementById('sidebar-toggle').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'))
+
+  // Always hide loader after 8 seconds
+  setTimeout(hideLoader, 8000)
+
+  let USER = null
 
   async function init() {
-    const session = await requireAuth()
-    if (!session) return
-    currentUser = session.user
+    // 1. Get session
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) { window.location.href = 'login.html'; return }
 
-    const [{ data: tasks }, { data: completed }] = await Promise.all([
-      supabase.from('tasks').select('*').eq('is_active', true).order('points', { ascending: false }),
-      supabase.from('task_completions').select('task_id').eq('user_id', currentUser.id)
-    ])
+    USER = session.user
 
-    allTasks = tasks || []
-    completedIds = completed?.map(c => c.task_id) || []
-    renderTasks(allTasks)
+    // 2. Fetch profile
+    let { data: profile } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', USER.id)
+      .single()
+
+    // 3. If no profile, create one
+    if (!profile) {
+      const name = USER.user_metadata?.name || USER.email.split('@')[0]
+      await supabase.from('users').upsert({
+        id: USER.id,
+        name,
+        email: USER.email,
+        phone: USER.user_metadata?.phone || '',
+        referral_code: Math.random().toString(36).substring(2,10).toUpperCase(),
+        points: 100,
+        streak_days: 0,
+        is_verified: true
+      })
+      // Fetch again
+      const { data: p2 } = await supabase.from('users').select('*').eq('id', USER.id).single()
+      profile = p2 || { name: USER.email.split('@')[0], points: 0, streak_days: 0, referral_code: '—' }
+    }
+
+    // 4. Render profile
+    const hour = new Date().getHours()
+    const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+    document.getElementById('welcome-msg').textContent = `${greeting}, ${profile.name} 👋`
+    document.getElementById('points-display').textContent = fmt(profile.points)
+    document.getElementById('naira-display').textContent = `≈ ${toNaira(profile.points)}`
+    document.getElementById('streak-display').textContent = `Day ${profile.streak_days || 0}`
+    document.getElementById('redeem-bal').textContent = fmt(profile.points)
+
+    // 5. Stats
+    const { data: txs } = await supabase.from('transactions').select('type,points').eq('user_id', USER.id)
+    const earned = txs?.filter(t=>t.type==='earn').reduce((s,t)=>s+(t.points||0),0) || 0
+    const redeemed = txs?.filter(t=>t.type==='redeem').reduce((s,t)=>s+Math.abs(t.points||0),0) || 0
+    document.getElementById('stat-earned').textContent = fmt(earned)
+    document.getElementById('stat-redeemed').textContent = fmt(redeemed)
+
+    const { count: taskCount } = await supabase.from('task_completions').select('*',{count:'exact',head:true}).eq('user_id',USER.id).eq('status','approved')
+    document.getElementById('stat-tasks').textContent = taskCount || 0
+
+    const { count: refCount } = await supabase.from('referrals').select('*',{count:'exact',head:true}).eq('referrer_id',USER.id)
+    document.getElementById('stat-refs').textContent = refCount || 0
+
+    // 6. Recent transactions
+    const { data: recent } = await supabase.from('transactions').select('*').eq('user_id',USER.id).order('created_at',{ascending:false}).limit(10)
+    const txList = document.getElementById('tx-list')
+    txList.innerHTML = recent?.length
+      ? recent.map(t => `
+          <div class="tx-item">
+            <div class="tx-dot" style="background:${t.type==='earn'?'var(--success)':'var(--danger)'}"></div>
+            <div style="flex:1;">
+              <div class="tx-name">${t.description}</div>
+              <div class="tx-time">${timeAgo(t.created_at)}</div>
+            </div>
+            <div class="tx-pts" style="color:${t.type==='earn'?'var(--success)':'var(--danger)'}">
+              ${t.type==='earn'?'+':''}${t.points} pts
+            </div>
+          </div>`).join('')
+      : '<div style="color:var(--muted);font-size:0.9rem;padding:1rem 0;">No activity yet. Start completing tasks!</div>'
+
+    // 7. Daily streak
+    const last = profile.last_login ? new Date(profile.last_login) : null
+    const diffDays = last ? Math.floor((Date.now()-last)/86400000) : 999
+    if (diffDays >= 1) {
+      let streak = profile.streak_days || 0
+      streak = diffDays >= 2 ? 1 : streak + 1
+      const pts = Math.min(10 + streak * 10, 100)
+      await supabase.from('users').update({ last_login: new Date().toISOString(), streak_days: streak }).eq('id', USER.id)
+      await supabase.rpc('increment_points', { user_id: USER.id, amount: pts })
+      await supabase.from('transactions').insert({ user_id: USER.id, type: 'earn', source: 'daily_streak', points: pts, description: `Day ${streak} streak bonus` })
+      // Update displayed balance immediately
+      const newPoints = (profile.points || 0) + pts
+      document.getElementById('points-display').textContent = fmt(newPoints)
+      document.getElementById('naira-display').textContent = `≈ ${toNaira(newPoints)}`
+      document.getElementById('streak-display').textContent = `Day ${streak}`
+      document.getElementById('redeem-bal').textContent = fmt(newPoints)
+      document.getElementById('stat-earned').textContent = fmt((parseInt(document.getElementById('stat-earned').textContent.replace(/,/g,''))||0) + pts)
+      toast(`🔥 Day ${streak} streak! +${pts} points added`, 'success')
+    }
+
     hideLoader()
   }
 
-  function renderTasks(tasks) {
-    const grid = document.getElementById('tasks-grid')
-    if (!tasks.length) { grid.innerHTML = '<div style="color:var(--muted);">No tasks available in this category.</div>'; return }
-
-    grid.innerHTML = tasks.map(task => {
-      const done = completedIds.includes(task.id)
-      return `
-        <div class="task-card ${done ? 'completed' : ''}">
-          <div class="task-icon">${typeIcons[task.type] || '⚡'}</div>
-          <div class="task-title">${task.title}</div>
-          <div class="task-desc">${task.description || ''}</div>
-          <div class="task-footer">
-            <span class="task-pts">+${task.points} pts</span>
-            ${done
-              ? '<span class="badge badge-success">✓ Done</span>'
-              : `<button class="btn btn-primary btn-sm" onclick="openTask('${task.id}')">Start</button>`
-            }
-          </div>
-          ${task.requires_review ? '<span class="badge badge-muted" style="width:fit-content;">Needs review</span>' : ''}
-        </div>
-      `
-    }).join('')
+  // ── Redeem ────────────────────────────────────────
+  window.toggleRedeem = () => {
+    const s = document.getElementById('redeem-section')
+    s.style.display = s.style.display === 'none' ? 'block' : 'none'
+    if (s.style.display === 'block') s.scrollIntoView({ behavior: 'smooth' })
   }
 
-  window.filterTasks = function (type, btn) {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'))
-    btn.classList.add('active')
-    renderTasks(type === 'all' ? allTasks : allTasks.filter(t => t.type === type))
+  window.switchTab = (tab) => {
+    document.getElementById('tab-bank').classList.toggle('active', tab==='bank')
+    document.getElementById('tab-airtime').classList.toggle('active', tab==='airtime')
+    document.getElementById('tab-bank-btn').classList.toggle('active', tab==='bank')
+    document.getElementById('tab-air-btn').classList.toggle('active', tab==='airtime')
   }
 
-  window.openTask = function (taskId) {
-    const task = allTasks.find(t => t.id === taskId)
-    if (!task) return
-    activeTaskId = taskId
+  document.getElementById('bank-points').addEventListener('input', e => {
+    const pts = parseInt(e.target.value)||0
+    document.getElementById('bank-preview').textContent = pts >= 1000 ? `= ${toNaira(pts)}` : ''
+  })
+  document.getElementById('air-points').addEventListener('input', e => {
+    const pts = parseInt(e.target.value)||0
+    document.getElementById('air-preview').textContent = pts >= 1000 ? `= ${toNaira(pts)}` : ''
+  })
 
-    document.getElementById('modal-icon').textContent = typeIcons[task.type] || '⚡'
-    document.getElementById('modal-title').textContent = task.title
-    document.getElementById('modal-desc').textContent = task.description || ''
-    document.getElementById('modal-pts').textContent = `+${task.points} points`
-    document.getElementById('modal-review').textContent = task.requires_review ? ' · Subject to review' : ' · Instant reward'
-    document.getElementById('modal-proof-section').style.display = task.requires_review ? 'block' : 'none'
-    document.getElementById('modal-proof').value = ''
-    document.getElementById('modal-error').classList.remove('show')
-    document.getElementById('modal-success').classList.remove('show')
-    document.getElementById('modal-confirm-btn').disabled = false
-    document.getElementById('modal-confirm-btn').textContent = 'Complete Task'
+  window.redeemBank = async () => {
+    const errEl = document.getElementById('bank-error')
+    const sucEl = document.getElementById('bank-success')
+    errEl.classList.remove('show'); sucEl.classList.remove('show')
 
-    if (task.url) window.open(task.url, '_blank')
-    document.getElementById('task-modal').classList.add('open')
+    const pts = parseInt(document.getElementById('bank-points').value)
+    const bankName = document.getElementById('bank-name').value.trim()
+    const acctNum = document.getElementById('bank-num').value.trim()
+    const acctName = document.getElementById('bank-acct-name').value.trim()
+
+    const { data: fresh } = await supabase.from('users').select('points').eq('id',USER.id).single()
+    if (!pts || pts < 1000) { errEl.textContent='Minimum 1,000 points.'; errEl.classList.add('show'); return }
+    if (pts > (fresh?.points||0)) { errEl.textContent='Not enough points.'; errEl.classList.add('show'); return }
+    if (!bankName||!acctNum||!acctName) { errEl.textContent='Please fill all bank details.'; errEl.classList.add('show'); return }
+    if (acctNum.length !== 10) { errEl.textContent='Account number must be 10 digits.'; errEl.classList.add('show'); return }
+
+    const naira = pts * 0.2
+    await supabase.rpc('decrement_points', { user_id: USER.id, amount: pts })
+    await supabase.from('transactions').insert({ user_id: USER.id, type: 'redeem', source: 'bank_transfer', points: -pts, description: `Bank withdrawal ₦${naira}` })
+    await supabase.from('redemptions').insert({ user_id: USER.id, type: 'bank', points: pts, naira_amount: naira, account_number: acctNum, bank_name: bankName, account_name: acctName, status: 'pending' })
+
+    sucEl.textContent = `✅ Withdrawal of ₦${naira.toLocaleString()} submitted! Admin will process within 24 hours.`
+    sucEl.classList.add('show')
+    toast('Withdrawal request submitted!', 'success')
+    document.getElementById('points-display').textContent = fmt((fresh?.points||0) - pts)
   }
 
-  window.closeModal = () => document.getElementById('task-modal').classList.remove('open')
+  window.redeemAirtime = async () => {
+    const errEl = document.getElementById('air-error')
+    const sucEl = document.getElementById('air-success')
+    errEl.classList.remove('show'); sucEl.classList.remove('show')
 
-  window.previewFile = function(input) {
-    if (!input.files || !input.files[0]) return
-    const file = input.files[0]
-    if (file.size > 5 * 1024 * 1024) {
-      alert('File too large. Max 5MB.')
-      input.value = ''
-      return
-    }
-    const reader = new FileReader()
-    reader.onload = e => {
-      document.getElementById('preview-img').src = e.target.result
-      document.getElementById('file-name').textContent = '✅ ' + file.name
-      document.getElementById('file-preview').style.display = 'block'
-      document.getElementById('upload-zone').style.borderColor = 'rgba(34,197,94,0.5)'
-    }
-    reader.readAsDataURL(file)
+    const pts = parseInt(document.getElementById('air-points').value)
+    const phone = document.getElementById('air-phone').value.trim()
+    const network = document.getElementById('air-network').value
+
+    const { data: fresh } = await supabase.from('users').select('points').eq('id',USER.id).single()
+    if (!pts || pts < 1000) { errEl.textContent='Minimum 1,000 points.'; errEl.classList.add('show'); return }
+    if (pts > (fresh?.points||0)) { errEl.textContent='Not enough points.'; errEl.classList.add('show'); return }
+    if (!phone||!network) { errEl.textContent='Please enter phone and select network.'; errEl.classList.add('show'); return }
+
+    const naira = pts * 0.2
+    await supabase.rpc('decrement_points', { user_id: USER.id, amount: pts })
+    await supabase.from('transactions').insert({ user_id: USER.id, type: 'redeem', source: 'airtime', points: -pts, description: `Airtime ₦${naira} to ${phone}` })
+    await supabase.from('redemptions').insert({ user_id: USER.id, type: 'airtime', points: pts, naira_amount: naira, phone, network, status: 'pending' })
+
+    sucEl.textContent = `✅ ₦${naira.toLocaleString()} airtime request submitted!`
+    sucEl.classList.add('show')
+    toast('Airtime request submitted!', 'success')
   }
 
-  window.clearFile = function() {
-    document.getElementById('proof-file').value = ''
-    document.getElementById('file-preview').style.display = 'none'
-    document.getElementById('upload-zone').style.borderColor = 'var(--border)'
-  }
-
-  window.confirmTask = async function () {
-    const task = allTasks.find(t => t.id === activeTaskId)
-    const proofText = document.getElementById('modal-proof').value.trim()
-    const proofFile = document.getElementById('proof-file').files[0]
-    const btn = document.getElementById('modal-confirm-btn')
-    const errorEl = document.getElementById('modal-error')
-    const successEl = document.getElementById('modal-success')
-
-    errorEl.classList.remove('show')
-    if (task.requires_review && !proofText && !proofFile) {
-      errorEl.textContent = 'Please provide proof — type an answer or attach a screenshot.'
-      errorEl.classList.add('show')
-      return
-    }
-
-    btn.disabled = true
-    btn.innerHTML = '<span class="spinner"></span> Submitting...'
-
-    // Upload image if provided
-    let proofUrl = proofText || null
-    if (proofFile) {
-      btn.innerHTML = '<span class="spinner"></span> Uploading image...'
-      const fileName = `${currentUser.id}/${activeTaskId}_${Date.now()}.${proofFile.name.split('.').pop()}`
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('task-proofs')
-        .upload(fileName, proofFile, { upsert: true })
-      
-      if (!uploadError) {
-        const { data: urlData } = supabase.storage.from('task-proofs').getPublicUrl(fileName)
-        proofUrl = urlData?.publicUrl || proofText || 'Image uploaded'
-      } else {
-        // Storage might not be set up — save as text note
-        proofUrl = proofText || 'Screenshot attached (upload failed — please contact support)'
-        console.log('Storage upload error:', uploadError)
-      }
-      btn.innerHTML = '<span class="spinner"></span> Submitting...'
-    }
-
-    const { error } = await supabase.from('task_completions').insert({
-      user_id: currentUser.id,
-      task_id: activeTaskId,
-      proof: proofUrl,
-      status: task.requires_review ? 'pending' : 'approved'
-    })
-
-    if (error) {
-      errorEl.textContent = 'Error submitting task. Try again.'
-      errorEl.classList.add('show')
-      btn.disabled = false
-      btn.textContent = 'Complete Task'
-      return
-    }
-
-    if (!task.requires_review) {
-      await supabase.rpc('increment_points', { user_id: currentUser.id, amount: task.points })
-      await supabase.from('transactions').insert({
-        user_id: currentUser.id, type: 'earn', source: 'task',
-        points: task.points, description: `Completed: ${task.title}`
-      })
-      toast(`+${task.points} points earned! 🔥`, 'success')
-    } else {
-      toast('Task submitted for review!', 'info')
-    }
-
-    completedIds.push(activeTaskId)
-    successEl.textContent = task.requires_review
-      ? '✅ Submitted for review. Points awarded after approval.'
-      : `✅ Done! +${task.points} points added to your balance.`
-    successEl.classList.add('show')
-    btn.textContent = 'Done!'
-    setTimeout(closeModal, 2000)
-    renderTasks(allTasks)
-  }
-
+  // ── Logout ────────────────────────────────────────
   document.getElementById('logout-btn').addEventListener('click', async e => {
     e.preventDefault()
     await supabase.auth.signOut()
@@ -295,6 +320,5 @@
 
   init()
 </script>
-<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
 </body>
 </html>
