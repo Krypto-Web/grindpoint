@@ -1,8 +1,3 @@
-// =============================================
-// GRINDPOINT — Supabase Client
-// Replace the values below with yours from:
-// supabase.com > project > settings > API
-// =============================================
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
