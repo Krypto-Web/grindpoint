@@ -1,160 +1,596 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2584816616413650"
-     crossorigin="anonymous"></script>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Grindpoint — Earn Naira Online in Nigeria</title>
-  <meta name="description" content="Complete tasks, watch ads, refer friends and earn real Naira. Nigeria's #1 rewards platform."/>
-  <!-- Google AdSense -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <title>Grindpoint — Coming Soon</title>
+  <meta name="description" content="Grindpoint is getting an upgrade. Nigeria's #1 rewards platform is coming back bigger and better."/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
   <style>
-    .hero { padding: 6rem 5% 5rem; text-align: center; position: relative; overflow: hidden; }
-    .hero::before { content:''; position:absolute; top:-80px; left:50%; transform:translateX(-50%); width:600px; height:600px; background:radial-gradient(circle,rgba(245,166,35,0.12) 0%,transparent 70%); pointer-events:none; }
-    .hero-badge { display:inline-flex; align-items:center; gap:0.5rem; background:rgba(245,166,35,0.1); border:1px solid rgba(245,166,35,0.25); color:var(--accent); padding:0.35rem 1rem; border-radius:50px; font-size:0.82rem; font-weight:500; margin-bottom:2rem; }
-    .hero h1 { font-size:clamp(2.8rem,6vw,5rem); letter-spacing:-2px; margin-bottom:1.5rem; }
-    .hero h1 span { color:var(--accent); }
-    .hero p { font-size:1.15rem; max-width:520px; margin:0 auto 2.5rem; }
-    .hero-btns { display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; }
-    .stats-bar { display:flex; justify-content:center; gap:3rem; padding:2.5rem 5%; border-top:1px solid var(--border); border-bottom:1px solid var(--border); flex-wrap:wrap; }
-    .stat-item { text-align:center; }
-    .stat-num { font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; color:var(--accent); }
-    .stat-lbl { font-size:0.82rem; color:var(--muted); margin-top:0.2rem; }
-    .steps-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1.5rem; }
-    .step-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem; transition:border-color 0.2s; }
-    .step-card:hover { border-color:rgba(245,166,35,0.3); }
-    .step-num { font-family:'Syne',sans-serif; font-size:3rem; font-weight:800; color:rgba(245,166,35,0.15); line-height:1; margin-bottom:1rem; }
-    .step-card h3 { font-size:1.05rem; margin-bottom:0.5rem; }
-    .earn-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:1rem; }
-    .earn-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem 1.25rem; transition:border-color 0.2s,background 0.2s; }
-    .earn-card:hover { border-color:rgba(245,166,35,0.35); background:rgba(245,166,35,0.04); }
-    .earn-icon { font-size:1.75rem; margin-bottom:0.75rem; display:block; }
-    .earn-card h4 { font-family:'Syne',sans-serif; font-weight:700; font-size:0.95rem; color:var(--text); margin-bottom:0.3rem; }
-    .earn-pts { display:inline-block; margin-top:0.6rem; background:rgba(245,166,35,0.12); color:var(--accent); font-size:0.75rem; font-weight:500; padding:0.2rem 0.65rem; border-radius:50px; }
-    .redeem-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1.5rem; }
-    .redeem-card { background:var(--bg3); border:1px solid var(--border); border-radius:20px; padding:2.5rem 2rem; text-align:center; }
-    .redeem-card.featured { border-color:rgba(245,166,35,0.5); background:rgba(245,166,35,0.05); }
-    .redeem-big { font-family:'Syne',sans-serif; font-size:2.5rem; font-weight:800; color:var(--accent); margin-bottom:0.5rem; }
-    .redeem-card h3 { margin-bottom:0.5rem; }
-    .cta-section { text-align:center; background:var(--bg2); border-top:1px solid var(--border); padding:5rem 5%; }
-    .cta-section h2 { font-size:clamp(2rem,4vw,3rem); margin-bottom:1rem; }
-    .ad-slot { margin: 2rem auto; max-width: 728px; text-align: center; min-height: 90px; background: var(--card); border: 1px dashed var(--border); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #080808;
+      --gold: #f5a623;
+      --gold2: #ff6b35;
+      --white: #f0ede6;
+      --muted: #5a5850;
+      --border: rgba(245,166,35,0.15);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--black);
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── Noise texture overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.4;
+    }
+
+    /* ── Grid lines ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(245,166,35,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245,166,35,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Radial glow ── */
+    .glow {
+      position: fixed;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 900px;
+      height: 600px;
+      background: radial-gradient(ellipse at center, rgba(245,166,35,0.08) 0%, transparent 65%);
+      pointer-events: none;
+      z-index: 0;
+      animation: glowPulse 6s ease-in-out infinite;
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
+      50% { opacity: 1; transform: translateX(-50%) scale(1.1); }
+    }
+
+    /* ── Main layout ── */
+    .page {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 5%;
+      text-align: center;
+    }
+
+    /* ── Status badge ── */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 0.4rem 1.1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 2.5rem;
+      animation: fadeDown 0.8s ease both;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--gold);
+      border-radius: 50%;
+      animation: blink 1.5s ease infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    /* ── Logo ── */
+    .logo-wrap {
+      margin-bottom: 1.5rem;
+      animation: fadeDown 0.8s 0.1s ease both;
+    }
+
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(5rem, 15vw, 11rem);
+      line-height: 0.9;
+      letter-spacing: 2px;
+      color: var(--white);
+      position: relative;
+      display: inline-block;
+    }
+
+    .logo .accent { color: var(--gold); }
+
+    .logo::after {
+      content: 'GRINDPOINT';
+      position: absolute;
+      inset: 0;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(245,166,35,0.12);
+      transform: translate(3px, 3px);
+      z-index: -1;
+    }
+
+    /* ── Tagline ── */
+    .tagline {
+      font-size: clamp(1rem, 2.5vw, 1.3rem);
+      font-weight: 300;
+      color: var(--muted);
+      max-width: 520px;
+      line-height: 1.75;
+      margin-bottom: 3rem;
+      animation: fadeDown 0.8s 0.2s ease both;
+    }
+
+    .tagline em {
+      font-style: italic;
+      color: rgba(240,237,230,0.6);
+    }
+
+    /* ── Progress bar ── */
+    .progress-wrap {
+      width: 100%;
+      max-width: 480px;
+      margin-bottom: 3rem;
+      animation: fadeDown 0.8s 0.3s ease both;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .progress-label span:last-child { color: var(--gold); }
+
+    .progress-track {
+      height: 3px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 50px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--gold2));
+      border-radius: 50px;
+      width: 0%;
+      animation: fillBar 2.5s 0.8s cubic-bezier(0.25,0.46,0.45,0.94) forwards;
+    }
+
+    @keyframes fillBar { to { width: 78%; } }
+
+    /* ── Feature pills ── */
+    .features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      justify-content: center;
+      max-width: 560px;
+      margin-bottom: 3.5rem;
+      animation: fadeDown 0.8s 0.4s ease both;
+    }
+
+    .pill {
+      background: rgba(245,166,35,0.06);
+      border: 1px solid rgba(245,166,35,0.15);
+      border-radius: 50px;
+      padding: 0.4rem 1rem;
+      font-size: 0.78rem;
+      color: rgba(240,237,230,0.65);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* ── Notify form ── */
+    .notify-form {
+      display: flex;
+      gap: 0;
+      max-width: 420px;
+      width: 100%;
+      margin-bottom: 4rem;
+      animation: fadeDown 0.8s 0.5s ease both;
+      border: 1px solid rgba(245,166,35,0.2);
+      border-radius: 50px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(10px);
+    }
+
+    .notify-form input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      padding: 0.85rem 1.5rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      color: var(--white);
+    }
+
+    .notify-form input::placeholder { color: var(--muted); }
+
+    .notify-form button {
+      background: var(--gold);
+      color: #080808;
+      border: none;
+      padding: 0.85rem 1.5rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 0 50px 50px 0;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+
+    .notify-form button:hover { opacity: 0.88; }
+
+    .notify-success {
+      display: none;
+      font-size: 0.85rem;
+      color: var(--gold);
+      margin-top: -3rem;
+      margin-bottom: 4rem;
+      animation: fadeDown 0.4s ease both;
+    }
+
+    /* ── Stats ── */
+    .stats {
+      display: flex;
+      gap: 3rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 4rem;
+      animation: fadeDown 0.8s 0.55s ease both;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.8rem;
+      letter-spacing: 1px;
+      color: var(--gold);
+      line-height: 1;
+    }
+
+    .stat-lbl {
+      font-size: 0.72rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 0.3rem;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      width: 100%;
+      max-width: 480px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin-bottom: 2.5rem;
+    }
+
+    /* ── Social ── */
+    .socials {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      animation: fadeDown 0.8s 0.6s ease both;
+    }
+
+    .social-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 50px;
+      padding: 0.5rem 1.1rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .social-btn:hover {
+      border-color: rgba(245,166,35,0.3);
+      color: var(--gold);
+      background: rgba(245,166,35,0.05);
+    }
+
+    /* ── Footer ── */
+    .footer {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    /* ── Countdown ── */
+    .countdown {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      margin-bottom: 3rem;
+      animation: fadeDown 0.8s 0.35s ease both;
+    }
+
+    .countdown-unit { text-align: center; }
+
+    .countdown-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.5rem;
+      line-height: 1;
+      color: var(--white);
+      display: block;
+      min-width: 70px;
+      position: relative;
+    }
+
+    .countdown-num::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 10%;
+      width: 80%;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .countdown-lbl {
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 0.5rem;
+      display: block;
+    }
+
+    .countdown-sep {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem;
+      color: var(--gold);
+      opacity: 0.3;
+      align-self: flex-start;
+      margin-top: 0.2rem;
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Corner decorations ── */
+    .corner {
+      position: fixed;
+      width: 80px;
+      height: 80px;
+      z-index: 2;
+      opacity: 0.25;
+    }
+
+    .corner-tl { top: 2rem; left: 2rem; border-top: 1px solid var(--gold); border-left: 1px solid var(--gold); }
+    .corner-tr { top: 2rem; right: 2rem; border-top: 1px solid var(--gold); border-right: 1px solid var(--gold); }
+    .corner-bl { bottom: 2rem; left: 2rem; border-bottom: 1px solid var(--gold); border-left: 1px solid var(--gold); }
+    .corner-br { bottom: 2rem; right: 2rem; border-bottom: 1px solid var(--gold); border-right: 1px solid var(--gold); }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .stats { gap: 2rem; }
+      .countdown { gap: 0.75rem; }
+      .countdown-num { font-size: 2.5rem; min-width: 52px; }
+      .corner { width: 40px; height: 40px; }
+    }
   </style>
 </head>
 <body>
 
-<nav>
-  <a href="index.html" class="logo">Grind<span>point</span></a>
-  <ul class="nav-links" id="nav-links">
-    <li><a href="#how-it-works">How it works</a></li>
-    <li><a href="#earn">Earn</a></li>
-    <li><a href="#redeem">Redeem</a></li>
-    <li><a href="leaderboard.html">Leaderboard</a></li>
-  </ul>
-  <div style="display:flex;gap:0.75rem;align-items:center;">
-    <a href="login.html" class="btn btn-ghost btn-sm">Login</a>
-    <a href="register.html" class="btn btn-primary btn-sm">Start Earning</a>
-    <button class="nav-mobile-toggle" onclick="document.getElementById('nav-links').classList.toggle('open')">☰</button>
+<!-- Decorative corners -->
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<!-- Glow -->
+<div class="glow"></div>
+
+<div class="page">
+
+  <!-- Status badge -->
+  <div class="status-badge">
+    <span class="status-dot"></span>
+    Under Maintenance
   </div>
-</nav>
 
-<!-- AdSense Banner -->
-<div class="ad-slot">
-  <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="1234567890" data-ad-format="auto" data-full-width-responsive="true"></ins>
-</div>
-
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-badge fade-up">🇳🇬 Built for Nigerians</div>
-  <h1 class="fade-up-2">Do tasks. Stack points.<br><span>Earn Naira.</span></h1>
-  <p class="fade-up-3">Grindpoint rewards every action you take online — from watching ads to labeling AI data. Cash out straight to your bank account or get instant airtime.</p>
-  <div class="hero-btns fade-up-3">
-    <a href="register.html" class="btn btn-primary">Create Free Account</a>
-    <a href="#how-it-works" class="btn btn-ghost">See how it works</a>
+  <!-- Logo -->
+  <div class="logo-wrap">
+    <div class="logo">Grind<span class="accent">point</span></div>
   </div>
-</section>
 
-<!-- STATS -->
-<div class="stats-bar">
-  <div class="stat-item"><div class="stat-num">50K+</div><div class="stat-lbl">Active earners</div></div>
-  <div class="stat-item"><div class="stat-num">₦12M+</div><div class="stat-lbl">Paid out this month</div></div>
-  <div class="stat-item"><div class="stat-num">9</div><div class="stat-lbl">Ways to earn</div></div>
-  <div class="stat-item"><div class="stat-num">24hrs</div><div class="stat-lbl">Withdrawal time</div></div>
-</div>
+  <!-- Tagline -->
+  <p class="tagline">
+    We're upgrading Nigeria's #1 rewards platform.<br/>
+    <em>Bigger tasks. Faster payouts. Better experience.</em>
+  </p>
 
-<!-- HOW IT WORKS -->
-<section class="section" id="how-it-works">
-  <div class="container">
-    <div class="section-label">How it works</div>
-    <h2 class="section-title">Three steps to your first payout</h2>
-    <p class="section-sub">No tricks, no hidden charges. Sign up free, complete tasks, and withdraw whenever you're ready.</p>
-    <div class="steps-grid">
-      <div class="step-card"><div class="step-num">01</div><h3>Sign up free</h3><p>Create your account in under 2 minutes. No fee, no hidden charges — ever.</p></div>
-      <div class="step-card"><div class="step-num">02</div><h3>Complete tasks & earn points</h3><p>Watch ads, take surveys, refer friends, label data, test apps — you choose your hustle.</p></div>
-      <div class="step-card"><div class="step-num">03</div><h3>Redeem for Naira or airtime</h3><p>Cash out directly to your Nigerian bank account or get instant airtime top-up.</p></div>
+  <!-- Progress bar -->
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>Build Progress</span>
+      <span>78%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill"></div>
     </div>
   </div>
-</section>
 
-<!-- AdSense mid-page -->
-<div class="ad-slot container">
-  <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="0987654321" data-ad-format="auto" data-full-width-responsive="true"></ins>
+  <!-- Countdown -->
+  <div class="countdown">
+    <div class="countdown-unit">
+      <span class="countdown-num" id="cd-days">00</span>
+      <span class="countdown-lbl">Days</span>
+    </div>
+    <span class="countdown-sep">:</span>
+    <div class="countdown-unit">
+      <span class="countdown-num" id="cd-hours">00</span>
+      <span class="countdown-lbl">Hours</span>
+    </div>
+    <span class="countdown-sep">:</span>
+    <div class="countdown-unit">
+      <span class="countdown-num" id="cd-mins">00</span>
+      <span class="countdown-lbl">Mins</span>
+    </div>
+    <span class="countdown-sep">:</span>
+    <div class="countdown-unit">
+      <span class="countdown-num" id="cd-secs">00</span>
+      <span class="countdown-lbl">Secs</span>
+    </div>
+  </div>
+
+  <!-- Features coming -->
+  <div class="features">
+    <div class="pill">📺 Watch Ads</div>
+    <div class="pill">🎮 Mini Games</div>
+    <div class="pill">🎙️ Transcription</div>
+    <div class="pill">🏷️ Data Labeling</div>
+    <div class="pill">🧠 Trivia & Quiz</div>
+    <div class="pill">🧪 App Testing</div>
+    <div class="pill">👥 Referral Bonuses</div>
+    <div class="pill">💸 Naira Payouts</div>
+    <div class="pill">📱 Airtime Top-up</div>
+  </div>
+
+  <!-- Notify form -->
+  <div class="notify-form" id="notify-form">
+    <input type="email" id="notify-email" placeholder="Enter your email to get notified"/>
+    <button onclick="notifyMe()">Notify Me</button>
+  </div>
+  <div class="notify-success" id="notify-success">
+    ✅ You're on the list! We'll notify you the moment we launch.
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">50K+</div>
+      <div class="stat-lbl">Waitlist users</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">₦12M+</div>
+      <div class="stat-lbl">Paid out so far</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">9</div>
+      <div class="stat-lbl">Ways to earn</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Socials -->
+  <div class="socials">
+    <a href="https://twitter.com/grindpointng" target="_blank" class="social-btn">
+      🐦 Twitter/X
+    </a>
+    <a href="https://wa.me/2349034192652" target="_blank" class="social-btn">
+      📱 WhatsApp
+    </a>
+    <a href="https://t.me/grindpointng" target="_blank" class="social-btn">
+      ✈️ Telegram
+    </a>
+  </div>
+
+  <div class="footer">© 2025 Grindpoint · grindpoint.com.ng</div>
 </div>
 
-<!-- EARN METHODS -->
-<section class="section" id="earn" style="background:var(--bg2);">
-  <div class="container">
-    <div class="section-label">Ways to earn</div>
-    <h2 class="section-title">9 ways to stack your points</h2>
-    <p class="section-sub">Pick tasks that fit your schedule and skills. Every action earns.</p>
-    <div class="earn-grid">
-      <div class="earn-card"><span class="earn-icon">📺</span><h4>Watch Ads</h4><p>Short video ads, earn every view</p><span class="earn-pts">+5–20 pts</span></div>
-      <div class="earn-card"><span class="earn-icon">👥</span><h4>Refer Friends</h4><p>Earn when your friends join and earn</p><span class="earn-pts">+500 pts</span></div>
-      <div class="earn-card"><span class="earn-icon">🔥</span><h4>Daily Streaks</h4><p>Log in daily, bonus points multiply</p><span class="earn-pts">+10–100 pts</span></div>
-      <div class="earn-card"><span class="earn-icon">🎮</span><h4>Mini-Games</h4><p>Play short games, earn as you score</p><span class="earn-pts">+15–50 pts</span></div>
-      <div class="earn-card"><span class="earn-icon">📱</span><h4>Social Tasks</h4><p>Follow, like, share on social media</p><span class="earn-pts">+10–30 pts</span></div>
-      <div class="earn-card"><span class="earn-icon">🎙️</span><h4>Transcription</h4><p>Listen and type — high-paying tasks</p><span class="earn-pts">+100–300 pts</span></div>
-      <div class="earn-card"><span class="earn-icon">🧪</span><h4>App Testing</h4><p>Test new apps and share feedback</p><span class="earn-pts">+200–500 pts</span></div>
-      <div class="earn-card"><span class="earn-icon">🏷️</span><h4>Data Labeling</h4><p>Tag images to train AI systems</p><span class="earn-pts">+50–200 pts</span></div>
-      <div class="earn-card"><span class="earn-icon">🧠</span><h4>Trivia & Quiz</h4><p>Answer questions, earn big on streaks</p><span class="earn-pts">+20–80 pts</span></div>
-    </div>
-  </div>
-</section>
+<script>
+  // ── Countdown to launch date ──────────────────────
+  // Change this to your actual launch date
+  const LAUNCH_DATE = new Date('2025-09-09T00:00:00')
 
-<!-- REDEEM -->
-<section class="section" id="redeem">
-  <div class="container">
-    <div class="section-label">Redeem</div>
-    <h2 class="section-title">Cash out your way</h2>
-    <p class="section-sub">1,000 points = ₦200. Withdraw to any Nigerian bank or get instant airtime.</p>
-    <div class="redeem-row">
-      <div class="redeem-card featured"><div class="redeem-big">₦</div><h3>Bank Transfer</h3><p>Withdraw directly to any Nigerian bank account. Processed within 24 hours.</p></div>
-      <div class="redeem-card"><div class="redeem-big">📡</div><h3>Airtime & Data</h3><p>Top up your phone instantly on MTN, Airtel, Glo, or 9mobile.</p></div>
-    </div>
-  </div>
-</section>
+  function updateCountdown() {
+    const now = new Date()
+    const diff = LAUNCH_DATE - now
 
-<!-- CTA -->
-<section class="cta-section">
-  <h2>Ready to start grinding?</h2>
-  <p>Join thousands of Nigerians already earning Naira from their phones and laptops.</p>
-  <a href="register.html" class="btn btn-primary" style="font-size:1.05rem;padding:1rem 2.5rem;margin-top:1rem;">Create Free Account →</a>
-</section>
+    if (diff <= 0) {
+      document.getElementById('cd-days').textContent = '00'
+      document.getElementById('cd-hours').textContent = '00'
+      document.getElementById('cd-mins').textContent = '00'
+      document.getElementById('cd-secs').textContent = '00'
+      return
+    }
 
-<footer>
-  <a href="index.html" class="logo" style="font-size:1.1rem;">Grind<span>point</span></a>
-  <p style="font-size:0.85rem;">© 2025 Grindpoint. All rights reserved.</p>
-  <div class="footer-links">
-    <a href="privacy.html">Privacy</a>
-    <a href="terms.html">Terms</a>
-    <a href="about.html">About</a>
-  </div>
-</footer>
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+    const secs = Math.floor((diff % (1000 * 60)) / 1000)
 
-<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    document.getElementById('cd-days').textContent = String(days).padStart(2, '0')
+    document.getElementById('cd-hours').textContent = String(hours).padStart(2, '0')
+    document.getElementById('cd-mins').textContent = String(mins).padStart(2, '0')
+    document.getElementById('cd-secs').textContent = String(secs).padStart(2, '0')
+  }
+
+  updateCountdown()
+  setInterval(updateCountdown, 1000)
+
+  // ── Notify form ───────────────────────────────────
+  window.notifyMe = function() {
+    const email = document.getElementById('notify-email').value.trim()
+    if (!email || !email.includes('@')) {
+      document.getElementById('notify-email').style.borderRight = '2px solid #ef4444'
+      return
+    }
+    document.getElementById('notify-form').style.display = 'none'
+    document.getElementById('notify-success').style.display = 'block'
+  }
+
+  document.getElementById('notify-email').addEventListener('keydown', e => {
+    if (e.key === 'Enter') notifyMe()
+  })
+</script>
 </body>
 </html>
